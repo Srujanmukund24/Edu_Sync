@@ -17,30 +17,34 @@ const teacherSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    mob: {
+    mobile: {
         type: String,
         required: true
     },
-    class: [{
+    division: [{
         name: {
             type: String,
-            required: true
+            // required: true
         },
         subject: {
             type: String,
-            required: true
+            // required: true
         }
     }],
     batch: [{
         name: {
             type: String,
-            required: true
+            // required: true
         },
         subject: {
             type: String,
-            required: true
+            // required: true
         }
-    }]
+    }],
+    password: {
+        type:String,
+        required:true
+    }
 });
 
 const Teacher = mongoose.model('Teacher', teacherSchema);

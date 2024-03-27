@@ -17,7 +17,7 @@ const studentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    mob: {
+    mobile: {
         type: String,
         required: true
     },
@@ -39,11 +39,17 @@ const studentSchema = new mongoose.Schema({
     },
     attendance: {
         type: String,
-        required: true
+        default:0
+        // required: true
     },
     ccapproved: {
-        type: String,
-        required: true
+        type: Boolean,
+        default:false
+        // required: true
+    },
+    password: {
+        type:String,
+        required:true
     }
 });
 
