@@ -2,13 +2,14 @@ const mongoose = require('mongoose');
 
 const mentorshipGroupSchema = new mongoose.Schema({
     teacher_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Teacher',
         required: true
     },
-    std_ids: {
-        type: [String],
-        required: true
-    },
+    std_ids: [{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Student',
+    }],
     type: {
         type: String,
         required: true

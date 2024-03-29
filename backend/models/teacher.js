@@ -22,8 +22,9 @@ const teacherSchema = new mongoose.Schema({
         required: true
     },
     division: [{
-        name: {
-            type: String,
+        divID: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Division',
             // required: true
         },
         subject: {
@@ -32,8 +33,9 @@ const teacherSchema = new mongoose.Schema({
         }
     }],
     batch: [{
-        name: {
-            type: String,
+        batchID: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Batch',
             // required: true
         },
         subject: {

@@ -6,7 +6,8 @@ const batchSchema = new mongoose.Schema({
         required: true
     },
     TGID: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Teacher',
         required: true
     }
 });

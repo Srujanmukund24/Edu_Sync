@@ -2,7 +2,13 @@ const mongoose = require('mongoose');
 
 const subjectSchema = new mongoose.Schema({
     std_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, // Assuming std_id is referencing the Student model
+        ref: 'Student', // Name of the referenced model
+        required: true
+    },
+    teacher_id:{
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Teacher',
         required: true
     },
     subname: {
@@ -11,21 +17,21 @@ const subjectSchema = new mongoose.Schema({
     },
     attendance: {
         type: String,
-        required: true
+        // required: true
     },
     marks: [{
         test_type: {
             type: String,
-            required: true
+            // required: true
         },
         marks: {
             type: String,
-            required: true
+            // required: true
         }
     }],
     sub_ticket_approval: {
-        type: String,
-        required: true
+        type: Boolean,
+        default:false
     }
 });
 

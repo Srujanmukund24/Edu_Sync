@@ -2,15 +2,18 @@ const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
     teacher_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Teacher',
         required: true
     },
     student_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Student',
         required: true
     },
     subject: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Subject',
         required: true
     },
     problemstatement: {
