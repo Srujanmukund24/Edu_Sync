@@ -1,10 +1,133 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const Admin = require('../models/admin')
-const Division = require('../models/division')
 const Teacher = require('../models/teacher')
+const Batch = require('../models/batch')
+const Division = require('../models/division')
 const Student = require('../models/student')
 const Subject = require('../models/subject')
+
+
+exports.getTeachers = async (req, res) => {
+    try {
+        // Fetch all teachers
+        const teachers = await Teacher.find({}, 'fname lname');
+        
+        // Extract names from the retrieved teachers
+        const teacherNames = teachers.map(teacher => `${teacher.fname} ${teacher.lname}`);
+        
+        res.status(200).json({ teachers: teacherNames });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.addBatch=async(req,res)=>{
+    try{
+        // here the name of the bact will come from the dropdown directly 
+        //and the teacher name will be from the dropdown made by get teacherroute...
+        const { name, teacherName } = req.body;
+        const [firstName, lastName] = teacherName.split(' ');
+
+        const teacher = await Teacher.findOne({ fname: firstName, lname: lastName });
+        if (!teacher) {
+            return res.status(404).json({ error: 'Teacher not found' });
+        }
+
+        const existingBatch = await Batch.findOne({ name: name });
+        if (existingBatch) {
+            return res.status(400).json({ error: 'Batch with this name already exists' });
+        }
+        const batch = new Batch({
+            name: name,
+            TGID: teacher._id
+        });
+
+        // Save the batch
+        await batch.save();
+
+        res.status(201).json({ message: 'Batch added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getBatches = async (req, res) => {
+    try {
+        // Fetch all batches
+        const batches = await Batch.find({}, 'name TGID').populate('TGID', 'fname lname');
+        // The populate method is used to replace the TGID field with the actual teacher document
+
+        res.status(200).json({ batches });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.addDivision = async (req, res) => {
+    try {
+        const { division, year, teacherName, batchNames } = req.body;
+        const [firstName, lastName] = teacherName.split(' ');
+
+        // Find the teacher by first name and last name
+        const teacher = await Teacher.findOne({ fname: firstName, lname: lastName });
+        if (!teacher) {
+            return res.status(404).json({ error: 'Teacher not found' });
+        }
+
+        // Append division name to batch names for uniqueness check
+        const uniqueBatchNames = batchNames.map(name => `${name}${division}`);
+
+        // Find batch documents by names
+        const batchDocuments = await Batch.find({ name: { $in: uniqueBatchNames } });
+        if (batchDocuments.length !== uniqueBatchNames.length) {
+            return res.status(404).json({ error: 'One or more batches not found' });
+        }
+
+        // Check if division with the same name already exists
+        const existingDivision = await Division.findOne({ division: division });
+        if (existingDivision) {
+            return res.status(400).json({ error: 'Division with the same name already exists' });
+        }
+
+        // Extract batch IDs from batch documents
+        const batchIds = batchDocuments.map(batch => batch._id);
+
+        // Create a new division
+        const newDivision = new Division({
+            division: division,
+            year: year,
+            CCID: teacher._id,
+            batches: batchIds
+        });
+
+        // Save the division
+        await newDivision.save();
+
+        res.status(201).json({ message: 'Division added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getDivisions = async (req, res) => {
+    try {
+        // Fetch all divisions and populate the associated batches and teacher
+        const divisions = await Division.find({})
+            .populate({
+                path: 'batches',
+                select: 'name -_id' // Select only the name field from batches
+            })
+            .populate({
+                path: 'CCID',
+                select: 'fname lname -_id' // Select first and last name of teacher
+            });
+
+        res.status(200).json({ divisions });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 exports.loginAdmin = async(req,res)=>{
     const {email,password} = req.body;
@@ -62,7 +185,9 @@ exports.registerAdmin = async(req,res)=>{
     }
     catch(err){
         return res.status(400).json({message:err.message});
-    }
+    };
+
+   
 }
 
 

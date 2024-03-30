@@ -34,8 +34,16 @@ app.post('/loginTeacher',teacherController.loginTeacher);
 app.post('/loginAdmin',adminController.loginAdmin);
 app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject);
 
+
+app.get('/getteachers',adminController.getTeachers);
+app.get('/getbatches',adminController.getBatches);
+app.post('/addbatches',adminController.addBatch);
+
+app.post('/adddivsion',adminController.addDivision);
+app.get('/getdivison',adminController.getDivisions);
+
 app.listen(port, () => {
     console.log(
-      `Node Server Running on Port ${process.env.PORT}`
+      `Node Server Running on Port ${process.env.PORT || 8080}`
     );
 });
