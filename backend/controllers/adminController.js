@@ -129,6 +129,14 @@ exports.getDivisions = async (req, res) => {
     }
 };
 
+exports.getStudents = async(req,res)=>{
+    const students = await Student.find();
+    if(!students){
+        return res.status(404).json({message:"students not found"});
+    }
+    return res.status(200).json({students});
+}
+
 exports.loginAdmin = async(req,res)=>{
     const {email,password} = req.body;
     if(!email || !password){

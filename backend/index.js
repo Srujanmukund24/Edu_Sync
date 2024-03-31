@@ -42,6 +42,11 @@ app.post('/addbatches',adminController.addBatch);
 app.post('/adddivsion',adminController.addDivision);
 app.get('/getdivison',adminController.getDivisions);
 
+app.get('/students/division/:divname',auth.authorizeTeacher,teacherController.getStudentFromDivision);
+app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch);
+app.get('/students/:regid',auth.authorizeTeacher,teacherController.getStudentById);
+app.get('/students',adminController.getStudents);
+
 app.listen(port, () => {
     console.log(
       `Node Server Running on Port ${process.env.PORT || 8080}`
