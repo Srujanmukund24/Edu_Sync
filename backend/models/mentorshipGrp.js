@@ -13,6 +13,10 @@ const mentorshipGroupSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true
+    },
+    group_id:{
+        type:String,
+        required:true
     }
 });
 

@@ -42,10 +42,18 @@ app.post('/addbatches',adminController.addBatch);
 app.post('/adddivsion',adminController.addDivision);
 app.get('/getdivison',adminController.getDivisions);
 
+app.post('/addmentorshipgrp',adminController.addMentorshipGroup);
+app.get('/getmentorshipgrp',adminController.getMentorshipGroups);
+
 app.get('/students/division/:divname',auth.authorizeTeacher,teacherController.getStudentFromDivision);
 app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch);
 app.get('/students/:regid',auth.authorizeTeacher,teacherController.getStudentById);
 app.get('/students',adminController.getStudents);
+
+app.post('/teacherchats/:studentId',auth.authorizeTeacher,teacherController.addTeacherChats);
+app.get('/getteacherchats/:studentId',auth.authorizeTeacher,teacherController.getTeacherChats);
+app.post('/studentchats/:teacherId',auth.authorizeStudent,studentController.addStudentChats);
+app.get('/getstudentchats/:teacherId',auth.authorizeStudent,studentController.getStudentsChats);
 
 app.listen(port, () => {
     console.log(

@@ -6,6 +6,7 @@ const Batch = require('../models/batch')
 const Division = require('../models/division')
 const Student = require('../models/student')
 const Subject = require('../models/subject')
+const MentorshipGroup = require('../models/mentorshipGrp')
 
 
 exports.getTeachers = async (req, res) => {
@@ -58,7 +59,7 @@ exports.getBatches = async (req, res) => {
         const batches = await Batch.find({}, 'name TGID').populate('TGID', 'fname lname');
         // The populate method is used to replace the TGID field with the actual teacher document
 
-        res.status(200).json({ batches });
+        res.status(200).json( batches );
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -123,7 +124,7 @@ exports.getDivisions = async (req, res) => {
                 select: 'fname lname -_id' // Select first and last name of teacher
             });
 
-        res.status(200).json({ divisions });
+        res.status(200).json(divisions );
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -134,7 +135,7 @@ exports.getStudents = async(req,res)=>{
     if(!students){
         return res.status(404).json({message:"students not found"});
     }
-    return res.status(200).json({students});
+    return res.status(200).json(students);
 }
 
 exports.loginAdmin = async(req,res)=>{
@@ -160,7 +161,7 @@ exports.loginAdmin = async(req,res)=>{
         res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000})
         user.token=token;
         console.log("Login successfull")
-        return res.status(200).json({user})
+        return res.status(200).json(user)
     }
     catch(err){
         return res.status(400).json({message:err.message});
@@ -244,7 +245,75 @@ exports.addSubject = async(req,res)=>{
     catch(err){
         return res.status(400).json({message:err.message});
     }
-    
-
-
 }
+
+exports.addMentorshipGroup = async (req, res) => {
+    try {
+        const { teacherName, type,studentRollNumbers,groupId } = req.body;
+        const [teacherFirstName, teacherLastName] = teacherName.split(' ');
+        // console.log(studentRollNumbers.type());
+        // Find the teacher by first name and last name
+        const teacher = await Teacher.findOne({ fname: teacherFirstName, lname: teacherLastName });
+        if (!teacher) {
+            return res.status(404).json({ error: 'Teacher not found' });
+        }
+
+        const studentIds = [];
+        for (const rollNumber of studentRollNumbers) {
+            const student = await Student.findOne({ rollno: rollNumber });
+            if (student) {
+                studentIds.push(student._id);
+            } else {
+                // If a student is not found, return a 404 error immediately
+                return res.status(404).json({ error: `Student with roll number ${rollNumber} not found` });
+            }
+        }
+
+        // Check if a mentorship group with the same teacher and students already exists
+        const existingGroup = await MentorshipGroup.findOne({
+            teacher_id: teacher._id,
+            std_ids: { $all: studentIds },
+            type: type,
+            group_id:groupId
+        });
+
+        if (existingGroup) {
+            return res.status(400).json({ error: 'Duplicate mentorship group found' });
+        }
+
+        // Create a new mentorship group
+        const newMentorshipGroup = new MentorshipGroup({
+            teacher_id: teacher._id,
+            std_ids: studentIds,
+            type: type,
+            group_id:groupId
+        });
+
+        // Save the mentorship group
+        await newMentorshipGroup.save();
+
+        res.status(201).json({ message: 'Mentorship group added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getMentorshipGroups = async (req, res) => {
+    try {
+        // Fetch all mentorship groups and populate teacher and student fields with names
+        const mentorshipGroups = await MentorshipGroup.find({})
+            .populate({
+                path: 'teacher_id',
+                select: 'fname lname -_id' // Select first and last name of teacher
+            })
+            .populate({
+                path: 'std_ids',
+                select: 'fname lname -_id' // Select first and last name of students
+            });
+
+        res.status(200).json(mentorshipGroups);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+

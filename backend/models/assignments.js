@@ -23,6 +23,10 @@ const assignmentSchema = new mongoose.Schema({
     uploaded_doc_link: {
         type: String,
         required: true
+    },
+    isComplete:{
+        type:Boolean,
+        default:false
     }
 });
 
