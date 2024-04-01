@@ -16,7 +16,7 @@ const adminSchema = new mongoose.Schema({
     user_type: {
         type: String,
         default: 'admin', 
-        enum: ['admin', 'student', 'teacher']
+        enum: ['admin', 'student', 'teacher'] 
     }
 });
 
