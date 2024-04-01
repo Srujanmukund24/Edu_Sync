@@ -20,7 +20,12 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors());
+
+const clientUrl = process.env.CLIENT_URL;
+app.use(cors({
+  credentials: true,
+  origin: clientUrl,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -36,7 +41,7 @@ app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject);
 
 
 app.get('/getteachers',adminController.getTeachers);
-app.get('/getbatches',adminController.getBatches);
+app.get('/getbatches',adminController.getBatches); 
 app.post('/addbatches',adminController.addBatch);
 
 app.post('/adddivsion',adminController.addDivision);
