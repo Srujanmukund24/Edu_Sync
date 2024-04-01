@@ -55,6 +55,9 @@ app.get('/getteacherchats/:studentId',auth.authorizeTeacher,teacherController.ge
 app.post('/studentchats/:teacherId',auth.authorizeStudent,studentController.addStudentChats);
 app.get('/getstudentchats/:teacherId',auth.authorizeStudent,studentController.getStudentsChats);
 
+app.get('/myDivisions',auth.authorizeTeacher,teacherController.getMyDivisions);
+app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
+
 app.listen(port, () => {
     console.log(
       `Node Server Running on Port ${process.env.PORT || 8080}`

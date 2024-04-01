@@ -54,7 +54,7 @@ exports.loginTeacher = async(req,res)=>{
         res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000});
         user.token = token;
         console.log(user);
-        return res.status(200).json({user})
+        return res.status(200).json(user)
 
     }
     catch(err){
@@ -73,7 +73,7 @@ exports.getStudentFromDivision = async(req,res)=>{
     if(!students){
         return res.status(404).json({message:"students not found"});
     }
-    return res.status(200).json({students});
+    return res.status(200).json(students);
 }
 
 exports.getStudentFromBatch = async(req,res)=>{
@@ -84,7 +84,7 @@ exports.getStudentFromBatch = async(req,res)=>{
     if(!students){
         return res.status(404).json({message:"students not found"});
     }
-    return res.status(200).json({students});
+    return res.status(200).json(students);
 }
 
 exports.getStudentById = async(req,res)=>{
@@ -93,7 +93,7 @@ exports.getStudentById = async(req,res)=>{
     if(!student){
         return res.status(404).json({message:"Student Not Found"});
     }
-    return res.status(200).json({student});
+    return res.status(200).json(student);
 }
 
 exports.addTeacherChats = async (req, res) => {
@@ -161,3 +161,28 @@ exports.getTeacherChats = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getMyDivisions = async(req,res)=>{
+    const teacherID = req.teacher.teacher_id;
+    const teacherObj = await Teacher.findOne({_id:teacherID});
+
+    if(!teacherObj){
+        return res.status(404).json({message:"Teacher object not found"});
+    }
+    const divisions = teacherObj.division;
+    console.log(divisions)
+    return res.status(200).json(divisions);
+}
+
+exports.getMyBatches = async(req,res)=>{
+    const teacherID = req.teacher.teacher_id;
+    const teacherObj = await Teacher.findOne({_id:teacherID});
+
+    if(!teacherObj){
+        return res.status(404).json({message:"Teacher object not found"});
+    }
+    const batches = teacherObj.batch;
+    console.log(batches)
+    return res.status(200).json(batches);
+}
+
