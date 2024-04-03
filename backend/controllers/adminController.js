@@ -12,12 +12,8 @@ const MentorshipGroup = require('../models/mentorshipGrp')
 exports.getTeachers = async (req, res) => {
     try {
         // Fetch all teachers
-        const teachers = await Teacher.find({}, 'fname lname');
-        
-        // Extract names from the retrieved teachers
-        const teacherNames = teachers.map(teacher => `${teacher.fname} ${teacher.lname}`);
-        
-        res.status(200).json({ teachers: teacherNames });
+        const teachers = await Teacher.find();        
+        res.status(200).json(teachers);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

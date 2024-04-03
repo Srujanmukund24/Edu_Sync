@@ -37,7 +37,7 @@ app.post('/registerStudent',studentController.registerStudent);
 app.post('/loginStudent',studentController.loginStudent);
 app.post('/loginTeacher',teacherController.loginTeacher);
 app.post('/loginAdmin',adminController.loginAdmin);
-app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject);
+app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject); 
 
 
 app.get('/getteachers',adminController.getTeachers);
