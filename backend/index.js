@@ -9,13 +9,15 @@ const cookieParser = require('cookie-parser');
 // const Division = require("./models/division");
 // const Batch = require("./models/batch");
 // const MentorshipGrp = require("./models/mentorshipGrp");
-// const Subject = require("./models/assignments");
+// const Subject = require("./models/subject");
 // const Teacher = require("./models/division");
 // const Assignment = require("./models/student");
 const teacherController = require('../backend/controllers/teacherController');
 const  studentController  = require("./controllers/studentController");
 const adminController = require("../backend/controllers/adminController")
-const auth = require('../backend/middleware/auth')
+const auth = require('../backend/middleware/auth');
+const MentorshipGroup = require("./models/mentorshipGrp");
+const Conversation = require("./models/conversation");
 dotenv.config();
 connectDB();
 
@@ -62,6 +64,8 @@ app.get('/getstudentchats/:teacherId',auth.authorizeStudent,studentController.ge
 
 app.get('/myDivisions',auth.authorizeTeacher,teacherController.getMyDivisions);
 app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
+
+app.post('/createAssignment',auth.authorizeTeacher,teacherController.createAssignment);
 
 app.listen(port, () => {
     console.log(

@@ -22,7 +22,7 @@ const assignmentSchema = new mongoose.Schema({
     },
     uploaded_doc_link: {
         type: String,
-        required: true
+        // required: true
     },
     isComplete:{
         type:Boolean,
