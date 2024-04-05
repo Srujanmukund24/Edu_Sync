@@ -59,6 +59,10 @@ app.get('/students/division/:divname',auth.authorizeTeacher,teacherController.ge
 app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch); 
 app.get('/students/:regid',auth.authorizeTeacher,teacherController.getStudentById);
 
+app.get('/getadmin',auth.authorizeAdmin,adminController.getCurrentAdmin)
+app.get('/getcurrentteacher',auth.authorizeTeacher,teacherController.getCurrentTeacher)
+app.get('/getcurrentstudent',auth.authorizeStudent,studentController.getCurrentStudent)
+
 app.post('/teacherchats/:studentId',auth.authorizeTeacher,teacherController.addTeacherChats);
 app.get('/getteacherchats/:studentId',auth.authorizeTeacher,teacherController.getTeacherChats);
 app.post('/studentchats/:teacherId',auth.authorizeStudent,studentController.addStudentChats);
