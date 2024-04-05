@@ -40,22 +40,24 @@ app.post('/loginStudent',studentController.loginStudent);
 app.post('/loginTeacher',teacherController.loginTeacher);
 app.post('/loginAdmin',adminController.loginAdmin);
 app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject);
+app.delete('/removeTeacher/:regid', adminController.removeTeacher);
+app.delete('/removeStudent/:regid', adminController.removeTeacher);
 
 
+app.get('/getstudents',adminController.getStudents);
 app.get('/getteachers',adminController.getTeachers);
 app.get('/getbatches',adminController.getBatches); 
 app.post('/addbatches',adminController.addBatch);
 
 app.post('/adddivsion',adminController.addDivision);
-app.get('/getdivison',adminController.getDivisions);
+app.get('/getdivision',adminController.getDivisions);
 
 app.post('/addmentorshipgrp',adminController.addMentorshipGroup);
 app.get('/getmentorshipgrp',adminController.getMentorshipGroups);
 
 app.get('/students/division/:divname',auth.authorizeTeacher,teacherController.getStudentFromDivision);
-app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch);
+app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch); 
 app.get('/students/:regid',auth.authorizeTeacher,teacherController.getStudentById);
-app.get('/students',adminController.getStudents);
 
 app.post('/teacherchats/:studentId',auth.authorizeTeacher,teacherController.addTeacherChats);
 app.get('/getteacherchats/:studentId',auth.authorizeTeacher,teacherController.getTeacherChats);

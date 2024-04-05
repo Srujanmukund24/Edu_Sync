@@ -8,16 +8,50 @@ const Student = require('../models/student')
 const Subject = require('../models/subject')
 const MentorshipGroup = require('../models/mentorshipGrp')
 
+exports.removeStudent = async (req, res) => {
+    try {
+        const { regid } = req.params; // Use req.params instead of req.param
+        // Check if the provided teacherId is valid
+        if (!regid) {
+            return res.status(400).json({ error: 'Teacher regID is required' });
+        }
+        // Find the teacher by _id
+        const student = await Student.findOne({regid : regid});
+        if (!student) {
+            return res.status(404).json({ error: 'Teacher not found' });
+        }
+        await student.deleteOne(); // Use deleteOne() to remove the document
+        res.status(200).json({ message: 'Teacher removed successfully' });
+    } catch (error) { 
+        res.status(500).json({ error: error.message });
+    }
+};
 
+exports.removeTeacher = async (req, res) => {
+    try {
+        const { regid } = req.params; // Use req.params instead of req.param
+        // Check if the provided teacherId is valid
+        if (!regid) {
+            return res.status(400).json({ error: 'Teacher regID is required' });
+        }
+        // Find the teacher by _id
+        const teacher = await Teacher.findOne({regid : regid});
+        if (!teacher) {
+            return res.status(404).json({ error: 'Teacher not found' });
+        }
+        await teacher.deleteOne(); // Use deleteOne() to remove the document
+        res.status(200).json({ message: 'Teacher removed successfully' });
+    } catch (error) { 
+        res.status(500).json({ error: error.message });
+    }
+};
+
+  
 exports.getTeachers = async (req, res) => {
     try {
         // Fetch all teachers
-        const teachers = await Teacher.find({}, 'fname lname');
-        
-        // Extract names from the retrieved teachers
-        const teacherNames = teachers.map(teacher => `${teacher.fname} ${teacher.lname}`);
-        
-        res.status(200).json({ teachers: teacherNames });
+        const teachers = await Teacher.find();        
+        res.status(200).json(teachers);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -27,10 +61,9 @@ exports.addBatch=async(req,res)=>{
     try{
         // here the name of the bact will come from the dropdown directly 
         //and the teacher name will be from the dropdown made by get teacherroute...
-        const { name, teacherName } = req.body;
-        const [firstName, lastName] = teacherName.split(' ');
+        const { name, teacherID } = req.body;
 
-        const teacher = await Teacher.findOne({ fname: firstName, lname: lastName });
+        const teacher = await Teacher.findById(teacherID);
         if (!teacher) {
             return res.status(404).json({ error: 'Teacher not found' });
         }
@@ -56,9 +89,7 @@ exports.addBatch=async(req,res)=>{
 exports.getBatches = async (req, res) => {
     try {
         // Fetch all batches
-        const batches = await Batch.find({}, 'name TGID').populate('TGID', 'fname lname');
-        // The populate method is used to replace the TGID field with the actual teacher document
-
+        const batches = await Batch.find({});
         res.status(200).json( batches );
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -114,16 +145,7 @@ exports.addDivision = async (req, res) => {
 exports.getDivisions = async (req, res) => {
     try {
         // Fetch all divisions and populate the associated batches and teacher
-        const divisions = await Division.find({})
-            .populate({
-                path: 'batches',
-                select: 'name -_id' // Select only the name field from batches
-            })
-            .populate({
-                path: 'CCID',
-                select: 'fname lname -_id' // Select first and last name of teacher
-            });
-
+        const divisions = await Division.find();
         res.status(200).json(divisions );
     } catch (error) {
         res.status(500).json({ error: error.message });
