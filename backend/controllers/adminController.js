@@ -175,7 +175,7 @@ exports.loginAdmin = async(req,res)=>{
     console.log(isMatch,password,user.password);
     if(!isMatch) return res.status(401).send("Invalid Password");
     try{
-        const token=jwt.sign({email},
+        const token=jwt.sign({email,admin_id:user._id},
             process.env.SECRET_KEY,
             {
                 expiresIn:"1m",
@@ -340,6 +340,17 @@ exports.getMentorshipGroups = async (req, res) => {
     }
 };
 
+exports.getCurrentAdmin=async(req,res)=>{
+    try{
+        const admin=await Admin.findById(req.admin.admin_id);
+        if(!admin){
+            return res.status(400).json("No teacher found")
+        }
+        return res.status(200).json(admin);
+    }catch(error){
+        res.status(500).json({error:error.message});
+    }
+}
 exports.addPractical = async(req,res)=>{
     try{
         const {batchID,teacherID,pracSubName} = req.body;

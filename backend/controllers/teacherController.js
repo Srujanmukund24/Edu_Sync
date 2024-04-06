@@ -219,3 +219,15 @@ exports.createAssignment = async(req,res) =>{
     }
     
 }
+
+exports.getCurrentTeacher=async(req,res)=>{
+    try{
+        const teacher=await Teacher.findById(req.teacher.teacher_id);
+        if(!teacher){
+            return res.status(400).json("No teacher found")
+        }
+        return res.status(200).json(teacher);
+    }catch(error){
+        res.status(500).json({error:error.message});
+    }
+}
