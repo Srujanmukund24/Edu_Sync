@@ -3,7 +3,8 @@ const Teacher = require("../models/teacher")
 
 const Conversation = require("../models/conversation")
 const bcrypt = require('bcrypt'); 
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const Assignment = require("../models/assignments");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -134,3 +135,24 @@ exports.getStudentsChats = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getAssignments = async(req,res)=>{
+    const studentID = req.student.student_id;
+    const assignments = await Assignment.find({student_id:studentID});
+
+    return res.status(200).json(assignments);
+}
+
+exports.getCompletedAssignments = async(req,res)=>{
+    const studentID = req.student.student_id;
+    const assignments = await Assignment.find({student_id:studentID,isComplete:true});
+
+    return res.status(200).json(assignments);
+}
+
+exports.getIncompleteAssignments = async(req,res)=>{
+    const studentID = req.student.student_id;
+    const assignments = await Assignment.find({student_id:studentID,isComplete:false});
+
+    return res.status(200).json(assignments);
+}

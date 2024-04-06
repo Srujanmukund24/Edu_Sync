@@ -70,6 +70,10 @@ app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
 app.post('/createAssignment',auth.authorizeTeacher,teacherController.createAssignment);
 app.post('/addPractical',adminController.addPractical);
 
+app.get('/getAssignments',auth.authorizeStudent,studentController.getAssignments);
+app.get('/getCompleted',auth.authorizeStudent,studentController.getCompletedAssignments);
+app.get('/getIncomplete',auth.authorizeStudent,studentController.getIncompleteAssignments);
+
 
 app.listen(port, () => {
     console.log(
