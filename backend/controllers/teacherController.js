@@ -231,3 +231,20 @@ exports.getCurrentTeacher=async(req,res)=>{
         res.status(500).json({error:error.message});
     }
 }
+
+exports.getTeacherByID = async(req,res)=>{
+    try{
+        const {teacherID} = req.params;
+        console.log(teacherID);
+        const teacher = await Teacher.findOne({_id:teacherID});
+        console.log(teacher)
+        if(!teacher){
+            return res.status(404).json({message:"Teacher Object Not Found"});
+        }
+        return res.status(200).json(teacher);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+    
+}

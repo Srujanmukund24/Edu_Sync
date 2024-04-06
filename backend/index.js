@@ -78,6 +78,7 @@ app.get('/getAssignments',auth.authorizeStudent,studentController.getAssignments
 app.get('/getCompleted',auth.authorizeStudent,studentController.getCompletedAssignments);
 app.get('/getIncomplete',auth.authorizeStudent,studentController.getIncompleteAssignments);
 
+app.get('/teachers/:teacherID',teacherController.getTeacherByID);
 
 app.listen(port, () => {
     console.log(
