@@ -72,6 +72,8 @@ app.get('/myDivisions',auth.authorizeTeacher,teacherController.getMyDivisions);
 app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
 
 app.post('/createAssignment',auth.authorizeTeacher,teacherController.createAssignment);
+app.post('/addPractical',adminController.addPractical);
+
 
 app.listen(port, () => {
     console.log(
