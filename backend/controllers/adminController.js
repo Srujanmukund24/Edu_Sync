@@ -7,6 +7,7 @@ const Division = require('../models/division')
 const Student = require('../models/student')
 const Subject = require('../models/subject')
 const MentorshipGroup = require('../models/mentorshipGrp')
+const Practical = require('../models/practical')
 
 exports.removeStudent = async (req, res) => {
     try {
@@ -174,7 +175,7 @@ exports.loginAdmin = async(req,res)=>{
     console.log(isMatch,password,user.password);
     if(!isMatch) return res.status(401).send("Invalid Password");
     try{
-        const token=jwt.sign({email},
+        const token=jwt.sign({email,admin_id:user._id},
             process.env.SECRET_KEY,
             {
                 expiresIn:"1m",
@@ -339,6 +340,49 @@ exports.getMentorshipGroups = async (req, res) => {
     }
 };
 
+exports.getCurrentAdmin=async(req,res)=>{
+    try{
+        const admin=await Admin.findById(req.admin.admin_id);
+        if(!admin){
+            return res.status(400).json("No teacher found")
+        }
+        return res.status(200).json(admin);
+    }catch(error){
+        res.status(500).json({error:error.message});
+    }
+}
+exports.addPractical = async(req,res)=>{
+    try{
+        const {batchID,teacherID,pracSubName} = req.body;
+        const batch = await Batch.findOne({_id:batchID});
+        const teacher = await Teacher.findOne({_id:teacherID});
+        if(!batch){
+            return res.status(404).json({message:"batch doesn't exist"});
+        }
+        if(!teacher){
+            return res.status(404).json({message:"teacher doesn't exist"});
+        }
+        if(!pracSubName){
+            return res.status(400).json({message:"subject name required"});
+        }
+        teacher.batch.push({batchID:batchID,subject:pracSubName});
+        await teacher.save();
+
+        const students = await Student.find({batch:batch.name});
+        for(const student of students){
+            const newObj = new Practical({
+                std_id:student._id,
+                teacher_id:teacherID,
+                pracsubname:pracSubName
+            })
+            await newObj.save();
+        }
+        return res.status(200).json({message:"Practicals added successfully"}); 
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
+}
 
 
 

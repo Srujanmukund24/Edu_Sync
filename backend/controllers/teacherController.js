@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const Student = require('../models/student');
 const Conversation = require('../models/conversation');
+const Assignment = require('../models/assignments');
+const Subject = require('../models/subject');
 
 exports.registerTeacher = async(req,res)=>{
     
@@ -40,7 +42,7 @@ exports.loginTeacher = async(req,res)=>{
         return res.status(400).send("Fill All Details")
     }
     const user = await Teacher.findOne({email});
-    if(!user) return res.status(409).send("Student Does not exist");
+    if(!user) return res.status(409).send("Teacher Does not exist");
 
     const isMatch = await bcrypt.compare(password,user.password);
     if(!isMatch) return res.status(401).send("Invalid Password");
@@ -186,3 +188,46 @@ exports.getMyBatches = async(req,res)=>{
     return res.status(200).json(batches);
 }
 
+exports.createAssignment = async(req,res) =>{
+    try{
+        const teacherID = req.teacher.teacher_id;
+        const {studentIds,problemStatement} = req.body;
+
+        //array of student IDs
+        if(!problemStatement){
+            return res.status(404).json({message:"Problem Statement Required"});
+        }
+        if(studentIds.length === 0){
+            return res.status(404).json({message:"studentIDs not found"});
+        }
+        
+        studentIds.forEach(async (studentID)=>{
+            const subject = await Subject.findOne({std_id:studentID,teacher_id:teacherID});
+            const newAssignment = new Assignment({
+                teacher_id:teacherID,
+                student_id:studentID,
+                subject:subject._id,
+                problemstatement:problemStatement,
+                uploaded_doc_link:''
+            })
+            await newAssignment.save();
+        })
+        return res.status(200).json({message:"Assignments created successfully"});
+    }
+    catch(error){
+        res.status(500).json({ error: error.message });
+    }
+    
+}
+
+exports.getCurrentTeacher=async(req,res)=>{
+    try{
+        const teacher=await Teacher.findById(req.teacher.teacher_id);
+        if(!teacher){
+            return res.status(400).json("No teacher found")
+        }
+        return res.status(200).json(teacher);
+    }catch(error){
+        res.status(500).json({error:error.message});
+    }
+}

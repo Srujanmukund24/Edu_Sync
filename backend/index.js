@@ -9,13 +9,15 @@ const cookieParser = require('cookie-parser');
 // const Division = require("./models/division");
 // const Batch = require("./models/batch");
 // const MentorshipGrp = require("./models/mentorshipGrp");
-// const Subject = require("./models/assignments");
+// const Subject = require("./models/subject");
 // const Teacher = require("./models/division");
 // const Assignment = require("./models/student");
 const teacherController = require('../backend/controllers/teacherController');
 const  studentController  = require("./controllers/studentController");
 const adminController = require("../backend/controllers/adminController")
-const auth = require('../backend/middleware/auth')
+const auth = require('../backend/middleware/auth');
+const MentorshipGroup = require("./models/mentorshipGrp");
+const Conversation = require("./models/conversation");
 dotenv.config();
 connectDB();
 
@@ -57,6 +59,10 @@ app.get('/students/division/:divname',auth.authorizeTeacher,teacherController.ge
 app.get('/students/batch/:batchname',auth.authorizeTeacher,teacherController.getStudentFromBatch); 
 app.get('/students/:regid',auth.authorizeTeacher,teacherController.getStudentById);
 
+app.get('/getadmin',auth.authorizeAdmin,adminController.getCurrentAdmin)
+app.get('/getcurrentteacher',auth.authorizeTeacher,teacherController.getCurrentTeacher)
+app.get('/getcurrentstudent',auth.authorizeStudent,studentController.getCurrentStudent)
+
 app.post('/teacherchats/:studentId',auth.authorizeTeacher,teacherController.addTeacherChats);
 app.get('/getteacherchats/:studentId',auth.authorizeTeacher,teacherController.getTeacherChats);
 app.post('/studentchats/:teacherId',auth.authorizeStudent,studentController.addStudentChats);
@@ -64,6 +70,10 @@ app.get('/getstudentchats/:teacherId',auth.authorizeStudent,studentController.ge
 
 app.get('/myDivisions',auth.authorizeTeacher,teacherController.getMyDivisions);
 app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
+
+app.post('/createAssignment',auth.authorizeTeacher,teacherController.createAssignment);
+app.post('/addPractical',adminController.addPractical);
+
 
 app.listen(port, () => {
     console.log(
