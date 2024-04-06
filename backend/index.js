@@ -41,7 +41,7 @@ app.post('/loginTeacher',teacherController.loginTeacher);
 app.post('/loginAdmin',adminController.loginAdmin);
 app.post('/addSubject',auth.authorizeAdmin,adminController.addSubject);
 app.delete('/removeTeacher/:regid', adminController.removeTeacher);
-app.delete('/removeStudent/:regid', adminController.removeTeacher);
+app.delete('/removeStudent/:regid', adminController.removeStudent);
 
 
 app.get('/getstudents',adminController.getStudents);

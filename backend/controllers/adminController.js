@@ -14,15 +14,15 @@ exports.removeStudent = async (req, res) => {
         const { regid } = req.params; // Use req.params instead of req.param
         // Check if the provided teacherId is valid
         if (!regid) {
-            return res.status(400).json({ error: 'Teacher regID is required' });
+            return res.status(400).json({ error: 'Student regID is required' });
         }
         // Find the teacher by _id
         const student = await Student.findOne({regid : regid});
         if (!student) {
-            return res.status(404).json({ error: 'Teacher not found' });
+            return res.status(404).json('Student not found');
         }
         await student.deleteOne(); // Use deleteOne() to remove the document
-        res.status(200).json({ message: 'Teacher removed successfully' });
+        res.status(200).json({ message: 'Student removed successfully' });
     } catch (error) { 
         res.status(500).json({ error: error.message });
     }

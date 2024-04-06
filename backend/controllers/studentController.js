@@ -14,8 +14,12 @@ exports.registerStudent = async(req,res)=>{
         return res.status(400).send("Fill complete details")
     }
 
-    const user = await Student.findOne({email:email});
+    let user = await Student.findOne({email:email});
     if(user) return res.status(409).send("Student already exists");
+    user = await Student.findOne({rollno:rollno});
+    if(user) return res.status(409).send("Rollno already use");
+    user = await Student.findOne({regid:regid});
+    if(user) return res.status(409).send("Registration ID already use");
 
     try{
         // const salt = await bcrypt.genSalt(10);
@@ -24,7 +28,7 @@ exports.registerStudent = async(req,res)=>{
             regid:regid,
             fname:fname,
             lname:lname,
-            email:email,
+            email:email, 
             mobile:mobile,
             division:division,
             year:year,
