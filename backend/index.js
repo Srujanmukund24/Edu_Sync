@@ -47,8 +47,8 @@ app.get('/getteachers',adminController.getTeachers);
 app.get('/getbatches',adminController.getBatches); 
 app.post('/addbatches',adminController.addBatch);
 
-app.post('/adddivsion',adminController.addDivision);
-app.get('/getdivision',adminController.getDivisions);
+app.post('/adddivision',adminController.addDivision);
+app.get('/getdivision',adminController.getDivisions); 
 
 app.post('/addmentorshipgrp',adminController.addMentorshipGroup);
 app.get('/getmentorshipgrp',adminController.getMentorshipGroups);

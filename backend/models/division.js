@@ -14,9 +14,9 @@ const DivisionSchema = new mongoose.Schema({
         ref: 'Teacher',
         required: true
     },
-    batches: [{
+    batches: [{ 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Batch',
+        ref: 'Batch', 
     }]
 });
 
