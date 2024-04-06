@@ -14,15 +14,15 @@ exports.removeStudent = async (req, res) => {
         const { regid } = req.params; // Use req.params instead of req.param
         // Check if the provided teacherId is valid
         if (!regid) {
-            return res.status(400).json({ error: 'Teacher regID is required' });
+            return res.status(400).json({ error: 'Student regID is required' });
         }
         // Find the teacher by _id
         const student = await Student.findOne({regid : regid});
         if (!student) {
-            return res.status(404).json({ error: 'Teacher not found' });
+            return res.status(404).json('Student not found');
         }
         await student.deleteOne(); // Use deleteOne() to remove the document
-        res.status(200).json({ message: 'Teacher removed successfully' });
+        res.status(200).json({ message: 'Student removed successfully' });
     } catch (error) { 
         res.status(500).json({ error: error.message });
     }
@@ -99,21 +99,17 @@ exports.getBatches = async (req, res) => {
 
 exports.addDivision = async (req, res) => {
     try {
-        const { division, year, teacherName, batchNames } = req.body;
-        const [firstName, lastName] = teacherName.split(' ');
+        const { division, year, teacherId, batchIds } = req.body;
 
         // Find the teacher by first name and last name
-        const teacher = await Teacher.findOne({ fname: firstName, lname: lastName });
+        const teacher = await Teacher.findById(teacherId);
         if (!teacher) {
             return res.status(404).json({ error: 'Teacher not found' });
         }
 
-        // Append division name to batch names for uniqueness check
-        const uniqueBatchNames = batchNames.map(name => `${name}${division}`);
-
         // Find batch documents by names
-        const batchDocuments = await Batch.find({ name: { $in: uniqueBatchNames } });
-        if (batchDocuments.length !== uniqueBatchNames.length) {
+        const batchDocuments = await Batch.findById({ $in: batchIds });
+        if (batchDocuments.length == 0) {
             return res.status(404).json({ error: 'One or more batches not found' });
         }
 
@@ -123,14 +119,11 @@ exports.addDivision = async (req, res) => {
             return res.status(400).json({ error: 'Division with the same name already exists' });
         }
 
-        // Extract batch IDs from batch documents
-        const batchIds = batchDocuments.map(batch => batch._id);
-
         // Create a new division
         const newDivision = new Division({
             division: division,
             year: year,
-            CCID: teacher._id,
+            CCID: teacherId,
             batches: batchIds
         });
 
