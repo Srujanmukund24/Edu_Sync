@@ -88,6 +88,9 @@ app.put('/updateAssignment',auth.authorizeStudent,studentController.updateAssign
 app.get('/student/myChats',auth.authorizeStudent,studentController.myChats);
 app.get('/teacher/myChats',auth.authorizeTeacher,teacherController.myChats);
 
+app.get('/getSubjects',adminController.getSubjects);
+app.get('/getPracticals',adminController.getPracticals);
+
 
 app.listen(port, () => {
     console.log(
