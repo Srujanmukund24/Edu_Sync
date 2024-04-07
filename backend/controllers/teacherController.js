@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/student');
 const Conversation = require('../models/conversation');
 const Assignment = require('../models/assignments');
-const Subject = require('../models/subject');
+const Subject = require('../models/studentsubjectinfo');
 
 exports.registerTeacher = async(req,res)=>{
     
