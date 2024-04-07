@@ -191,3 +191,14 @@ exports.updateAssignment = async(req,res)=>{
         return res.status(400).json({message:err.message});
     }
 }
+
+exports.myChats = async(req,res)=>{
+    const studentID = req.student.student_id;
+    if(!studentID){
+        return res.status(404).json({message:"studentID not found"});
+    }
+
+    const chats = await Conversation.find({studentId:studentID});
+    return res.status(200).json(chats);
+    
+}

@@ -85,6 +85,10 @@ app.post('/addPractical',auth.authorizeAdmin,adminController.addPractical);
 
 app.put('/updateAssignment',auth.authorizeStudent,studentController.updateAssignment);
 
+app.get('/student/myChats',auth.authorizeStudent,studentController.myChats);
+app.get('/teacher/myChats',auth.authorizeTeacher,teacherController.myChats);
+
+
 app.listen(port, () => {
     console.log(
       `Node Server Running on Port ${process.env.PORT || 8080}`

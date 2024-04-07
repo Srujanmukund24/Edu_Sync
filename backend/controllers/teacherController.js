@@ -248,3 +248,13 @@ exports.getTeacherByID = async(req,res)=>{
     }
     
 }
+
+exports.myChats = async(req,res)=>{
+    const teacherID = req.teacher.teacher_id;
+    if(!teacherID){
+        return res.status(404).json({message:"teacherID not found"});
+    }
+
+    const chats = await Conversation.find({teacherId:teacherID});
+    return res.status(200).json(chats);
+}
