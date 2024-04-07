@@ -172,3 +172,22 @@ exports.getCurrentStudent=async(req,res)=>{
         res.status(500).json({error:error.message});
     }
 }
+
+exports.updateAssignment = async(req,res)=>{
+    try{
+        const {uploadLink,assignmentID} = req.body;
+        const studentID = req.student.student_id;
+        const assignment = await Assignment.findOne({_id:assignmentID});
+        if(!assignment){
+            return res.status(404).json({message:"Assignment Not Found"});
+        }
+        if(assignment.student_id!=studentID){
+            return res.status(400).json({message:"studentID doesnt match with the studentID belonging to assignment"});
+        }
+        assignment.uploaded_doc_link = uploadLink;
+        await assignment.save();
+        return res.status(200).json(assignment);
+    }catch(err){
+        return res.status(400).json({message:err.message});
+    }
+}
