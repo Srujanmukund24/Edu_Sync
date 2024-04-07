@@ -22,7 +22,8 @@ const studentSchema = new mongoose.Schema({
         required: true
     },
     division: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Division', 
         required: true
     },
     year: {
@@ -34,7 +35,8 @@ const studentSchema = new mongoose.Schema({
         required: true
     },
     batch: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Batch', 
         required: true
     },
     attendance: {

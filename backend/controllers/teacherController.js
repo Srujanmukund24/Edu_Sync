@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/student');
 const Conversation = require('../models/conversation');
 const Assignment = require('../models/assignments');
-const Subject = require('../models/subject');
+const Subject = require('../models/studentsubjectinfo');
 
 exports.registerTeacher = async(req,res)=>{
     
@@ -230,4 +230,21 @@ exports.getCurrentTeacher=async(req,res)=>{
     }catch(error){
         res.status(500).json({error:error.message});
     }
+}
+
+exports.getTeacherByID = async(req,res)=>{
+    try{
+        const {teacherID} = req.params;
+        console.log(teacherID);
+        const teacher = await Teacher.findOne({_id:teacherID});
+        console.log(teacher)
+        if(!teacher){
+            return res.status(404).json({message:"Teacher Object Not Found"});
+        }
+        return res.status(200).json(teacher);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+    
 }

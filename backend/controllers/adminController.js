@@ -5,8 +5,10 @@ const Teacher = require('../models/teacher')
 const Batch = require('../models/batch')
 const Division = require('../models/division')
 const Student = require('../models/student')
-const Subject = require('../models/subject')
+const StudentSubjectInfo = require('../models/studentsubjectinfo')
 const MentorshipGroup = require('../models/mentorshipGrp')
+const StudentPracticalInfo = require('../models/studentpracticalinfo')
+const Subject = require('../models/subject')
 const Practical = require('../models/practical')
 
 exports.removeStudent = async (req, res) => {
@@ -14,15 +16,15 @@ exports.removeStudent = async (req, res) => {
         const { regid } = req.params; // Use req.params instead of req.param
         // Check if the provided teacherId is valid
         if (!regid) {
-            return res.status(400).json({ error: 'Teacher regID is required' });
+            return res.status(400).json({ error: 'Student regID is required' });
         }
         // Find the teacher by _id
         const student = await Student.findOne({regid : regid});
         if (!student) {
-            return res.status(404).json({ error: 'Teacher not found' });
+            return res.status(404).json('Student not found');
         }
         await student.deleteOne(); // Use deleteOne() to remove the document
-        res.status(200).json({ message: 'Teacher removed successfully' });
+        res.status(200).json({ message: 'Student removed successfully' });
     } catch (error) { 
         res.status(500).json({ error: error.message });
     }
@@ -216,7 +218,7 @@ exports.registerAdmin = async(req,res)=>{
 }
 
 
-exports.addSubject = async(req,res)=>{
+exports.addStudentSubjectInfo = async(req,res)=>{
     
     try{
         const {divisionNum,year,teacherName,subjectName} = req.body;
@@ -247,7 +249,7 @@ exports.addSubject = async(req,res)=>{
         //iterate over each student and create subject schema for each
         const teacherID = teacher._id;
         for(const student of students){
-            const subject = new Subject({
+            const subject = new StudentSubjectInfo({
                 std_id:student._id,
                 teacher_id:teacherID,
                 subname:subjectName
@@ -344,7 +346,7 @@ exports.getCurrentAdmin=async(req,res)=>{
         res.status(500).json({error:error.message});
     }
 }
-exports.addPractical = async(req,res)=>{
+exports.addStudentPracticalInfo = async(req,res)=>{
     try{
         const {batchID,teacherID,pracSubName} = req.body;
         const batch = await Batch.findOne({_id:batchID});
@@ -363,7 +365,7 @@ exports.addPractical = async(req,res)=>{
 
         const students = await Student.find({batch:batch.name});
         for(const student of students){
-            const newObj = new Practical({
+            const newObj = new StudentPracticalInfo({
                 std_id:student._id,
                 teacher_id:teacherID,
                 pracsubname:pracSubName
@@ -375,6 +377,52 @@ exports.addPractical = async(req,res)=>{
     catch(err){
         return res.status(400).json({message:err.message})
     }
+}
+
+
+exports.addSubject = async(req,res)=>{
+    try{
+        const {subjectName,year} = req.body;
+        if(!subjectName || !year){
+            return res.status(400).json({message:"Enter all fields"});
+        }
+        const subject = await Subject.findOne({subjectName:subjectName});
+        if(subject){
+            return res.status(400).json({message:"Subject Name already exists"});
+        }
+        const newSubject = new Subject({
+            subjectName:subjectName,
+            year:year
+        })
+        await newSubject.save();
+        return res.status(200).json(newSubject);
+        
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+
+}
+exports.addPractical = async(req,res)=>{
+    try{
+        const {practicalName,year} = req.body;
+        if(!practicalName || !year){
+            return res.status(400).json({message:"Enter all fields"});
+        }
+        const practical = await Subject.findOne({practicalName:practicalName});
+        if(practical){
+            return res.status(400).json({message:"Practical Name already exists"});
+        }
+        const newPractical = new Practical({
+            practicalName:practicalName,
+            year:year
+        })
+        await newPractical.save();
+        return res.status(200).json(newPractical);
+    }catch(err){
+        return res.status(400).json({message:err.message});
+    }
+    
 }
 
 
