@@ -39,7 +39,7 @@ app.post('/registerStudent',studentController.registerStudent);
 app.post('/loginStudent',studentController.loginStudent);
 app.post('/loginTeacher',teacherController.loginTeacher);
 app.post('/loginAdmin',adminController.loginAdmin);
-app.post('/addStudentSubjectInfo',auth.authorizeAdmin,adminController.addStudentSubjectInfo);
+app.post('/addStudentSubjectInfo',adminController.AddOrUpdateStudentsSubjectInfo);
 app.delete('/removeTeacher/:regid', adminController.removeTeacher);
 app.delete('/removeStudent/:regid', adminController.removeStudent);
 

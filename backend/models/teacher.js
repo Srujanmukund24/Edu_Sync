@@ -31,7 +31,7 @@ const teacherSchema = new mongoose.Schema({
             type: String,
             // required: true
         }
-    }],
+    }], 
     batch: [{
         batchID: {
             type: mongoose.Schema.Types.ObjectId, 

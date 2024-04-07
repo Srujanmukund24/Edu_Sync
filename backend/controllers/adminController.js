@@ -217,6 +217,56 @@ exports.registerAdmin = async(req,res)=>{
    
 }
 
+exports.AddOrUpdateStudentsSubjectInfo = async (req, res) => {
+    try {
+        const { teacher_id, division_id, subName, year } = req.body;
+
+        if (!teacher_id || !division_id || !subName || !year) {
+            return res.status(400).send("Fill complete details");
+        }
+
+        // Find all students in the specified division and year
+        const students = await Student.find({ division: division_id, year: year });
+
+        // Update StudentSubjectInfo for each student
+        for (const student of students) {
+            // Update or create StudentSubjectInfo
+            await StudentSubjectInfo.findOneAndUpdate(
+                { std_id: student._id, subname: subName },
+                { std_id: student._id, subname: subName, teacher_id: teacher_id },
+                { upsert: true }
+            );
+        }
+
+        // Find the old teacher for the division and subject
+        const oldTeacher = await Teacher.findOne({
+            'division': { $elemMatch: { 'divID': division_id, 'subject': subName } }
+        });
+
+        if (oldTeacher) {
+            // Remove division and subject from old teacher's division array
+            oldTeacher.division = oldTeacher.division.filter(div => !(div.divID.equals(division_id) && div.subject === subName));
+            await oldTeacher.save();
+        }
+
+        // Find the new teacher
+        const newTeacher = await Teacher.findById(teacher_id);
+
+        // Add division and subject to new teacher's division array
+        const existingDivision = newTeacher.division.find(div => div.divID.equals(division_id) && div.subject === subName);
+        if (!existingDivision) {
+            newTeacher.division.push({ divID: division_id, subject: subName });
+            await newTeacher.save();
+        }
+
+        return res.status(200).json({ message: "Successfully updated student subject information" });
+
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
+
+
 
 exports.addStudentSubjectInfo = async(req,res)=>{
     
