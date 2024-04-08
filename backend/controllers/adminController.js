@@ -283,10 +283,67 @@ exports.addStudentSubjectInfo = async(req,res)=>{
             return res.status(400).send("This division id doesnt exist in database");
         }
 
+        //find if teacher with divID and subject exists
+        const oldTeacher = await Teacher.findOne({
+            'division': {
+                $elemMatch: {
+                    'divID': divi._id,
+                    'subject': subjectName
+                }
+            }
+        })
+        //if exists then go and update(i.e delete from that array)
+        if(oldTeacher){
+            console.log('old',oldTeacher)
+            const updatedTeacher = await Teacher.findOneAndUpdate(
+                {
+                    'division': {
+                        $elemMatch: {
+                            'divID': divi._id,
+                            'subject': subjectName
+                        }
+                    }
+                },
+                {
+                    $pull: {
+                        'division': {'divID': divi._id,'subject': subjectName}
+                    }
+                },
+                { new: true }
+            );
+            await updatedTeacher.save();
+
+            //find new teacher to assign
+            const teacher = await Teacher.findOne({fname:firstName,lname:lastName});
+            if(!teacher){
+                return res.status(400).status("This teacher doesnt exist in database");
+            }
+            console.log('to assign',teacher);
+
+            //added division id and subject name in new teacher object
+            const divisionID = divi._id;
+            teacher.division.push({divID:divisionID,subject:subjectName});
+            console.log('pushed');
+            await teacher.save();
+            console.log('finding')
+
+            const subjects = await StudentSubjectInfo.find({teacher_id:oldTeacher._id,subname:subjectName});
+            console.log('found');
+            console.log('sub:',subjects)
+            for(const subject of subjects){
+                subject.teacher_id = teacher._id,
+                await subject.save();
+            }
+            return res.status(200).json({message:"successfully updated the teacher"})
+            
+        }
+
+        //find new teacher to assign
         const teacher = await Teacher.findOne({fname:firstName,lname:lastName});
         if(!teacher){
             return res.status(400).status("This teacher doesnt exist in database");
         }
+        console.log('new',teacher);
 
         //added division id and subect name in teacher object
         const divisionID = divi._id;
@@ -294,8 +351,7 @@ exports.addStudentSubjectInfo = async(req,res)=>{
         await teacher.save();
 
         //get list of all those students who belongs to division==division(e.g:"09") and year == year(e.g:"TE")
-        const students = await Student.find({division:divisionNum,year:year});
-
+        const students = await Student.find({division:divi._id,year:year});
         //iterate over each student and create subject schema for each
         const teacherID = teacher._id;
         for(const student of students){
@@ -475,5 +531,24 @@ exports.addPractical = async(req,res)=>{
     
 }
 
+exports.getSubjects = async(req,res)=>{
+    try{
+        const subjects = await Subject.find({});
+        return res.status(200).json(subjects);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+}
+
+exports.getPracticals = async(req,res)=>{
+    try{
+        const practicals = await Practical.find({});
+        return res.status(200).json(practicals);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+}
 
 
