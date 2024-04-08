@@ -266,7 +266,54 @@ exports.AddOrUpdateStudentsSubjectInfo = async (req, res) => {
     }
 };
 
+exports.AddOrUpdateStudentsPracticalInfo = async (req, res) => {
+    try {
+        const { teacher_id, batch_id, practicalName, year } = req.body;
 
+        if (!teacher_id || !batch_id || !practicalName || !year) {
+            return res.status(400).send("Fill complete details");
+        }
+
+        // Find all students in the specified division and year
+        const students = await Student.find({ batch: batch_id, year: year });
+
+        // Update StudentSubjectInfo for each student
+        for (const student of students) {
+            // Update or create StudentSubjectInfo
+            await StudentPracticalInfo.findOneAndUpdate(
+                { std_id: student._id, pracsubname: practicalName },
+                { std_id: student._id, pracsubname: practicalName, teacher_id: teacher_id },
+                { upsert: true }
+            );
+        }
+
+        // Find the old teacher for the division and subject
+        const oldTeacher = await Teacher.findOne({
+            'batch': { $elemMatch: { 'batchID': batch_id, 'subject': practicalName } }
+        });
+
+        if (oldTeacher) {
+            // Remove division and subject from old teacher's division array
+            oldTeacher.batch = oldTeacher.batch.filter(batch => !(batch.batchID.equals(batch_id) && batch.subject === practicalName));
+            await oldTeacher.save();
+        }
+
+        // Find the new teacher
+        const newTeacher = await Teacher.findById(teacher_id);
+
+        // Add division and subject to new teacher's division array
+        const existingBatch = newTeacher.batch.find(batch => batch.batchID.equals(batch_id) && batch.subject === practicalName);
+        if (!existingBatch) {
+            newTeacher.batch.push({ batchID: batch_id, subject: practicalName });
+            await newTeacher.save();
+        }
+
+        return res.status(200).json({ message: "Successfully updated student practical information" });
+
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
 
 exports.addStudentSubjectInfo = async(req,res)=>{
     

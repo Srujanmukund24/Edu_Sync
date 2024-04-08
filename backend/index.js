@@ -42,7 +42,7 @@ app.post('/loginAdmin',adminController.loginAdmin);
 app.post('/addStudentSubjectInfo',auth.authorizeAdmin,adminController.addStudentSubjectInfo);
 app.delete('/removeTeacher/:regid', adminController.removeTeacher);
 app.delete('/removeStudent/:regid', adminController.removeStudent);
-app.post('/addStudentSubjectInfo',adminController.AddOrUpdateStudentsSubjectInfo);
+app.post('/addStudentsSubjectInfo',adminController.AddOrUpdateStudentsSubjectInfo);
 
 
 
@@ -75,6 +75,8 @@ app.get('/myBatchs',auth.authorizeTeacher,teacherController.getMyBatches);
 
 app.post('/createAssignment',auth.authorizeTeacher,teacherController.createAssignment);
 app.post('/addStudentPracticalInfo',adminController.addStudentPracticalInfo);
+app.post('/addStudentsPracticalInfo',adminController.AddOrUpdateStudentsPracticalInfo);
+
 
 app.get('/getAssignments',auth.authorizeStudent,studentController.getAssignments);
 app.get('/getCompleted',auth.authorizeStudent,studentController.getCompletedAssignments);
@@ -91,7 +93,7 @@ app.get('/student/myChats',auth.authorizeStudent,studentController.myChats);
 app.get('/teacher/myChats',auth.authorizeTeacher,teacherController.myChats);
 
 app.get('/getSubjects',adminController.getSubjects);
-app.get('/getPracticals',adminController.getPracticals);
+app.get('/getPracticals',adminController.getPracticals); 
 
 
 app.listen(port, () => {
