@@ -499,38 +499,6 @@ exports.getCurrentAdmin=async(req,res)=>{
         res.status(500).json({error:error.message});
     }
 }
-exports.addStudentPracticalInfo = async(req,res)=>{
-    try{
-        const {batchID,teacherID,pracSubName} = req.body;
-        const batch = await Batch.findOne({_id:batchID});
-        const teacher = await Teacher.findOne({_id:teacherID});
-        if(!batch){
-            return res.status(404).json({message:"batch doesn't exist"});
-        }
-        if(!teacher){
-            return res.status(404).json({message:"teacher doesn't exist"});
-        }
-        if(!pracSubName){
-            return res.status(400).json({message:"subject name required"});
-        }
-        teacher.batch.push({batchID:batchID,subject:pracSubName});
-        await teacher.save();
-
-        const students = await Student.find({batch:batch.name});
-        for(const student of students){
-            const newObj = new StudentPracticalInfo({
-                std_id:student._id,
-                teacher_id:teacherID,
-                pracsubname:pracSubName
-            })
-            await newObj.save();
-        }
-        return res.status(200).json({message:"Practicals added successfully"}); 
-    }
-    catch(err){
-        return res.status(400).json({message:err.message})
-    }
-}
 
 
 exports.addSubject = async(req,res)=>{
