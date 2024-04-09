@@ -135,7 +135,7 @@ exports.registerTeacher = async(req,res)=>{
     const {regid,fname,lname,email,mobile,password} = req.body;
    
     if(!regid || !fname || !lname || !email || !mobile || !password){
-        return res.status(400).send("Fill complete details")
+        return res.status(400).send("Fill complete details") 
     }
     
     const user = await Teacher.findOne({email:email})
