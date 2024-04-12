@@ -1,10 +1,12 @@
 const Student = require("../models/student")
-const Teacher = require("../models/teacher")
-
+const Teacher = require("../models/teacher") 
 const Conversation = require("../models/conversation")
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken');
 const Assignment = require("../models/assignments");
+const Division = require("../models/division");
+const StudentSubjectInfo = require("../models/studentsubjectinfo");
+const StudentPracticalInfo = require("../models/studentpracticalinfo");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -203,4 +205,47 @@ exports.myChats = async(req,res)=>{
     const chats = await Conversation.find({studentId:studentID});
     return res.status(200).json(chats);
     
+}
+
+exports.getDivisionByID = async(req,res)=>{
+    try{
+        const {divisionID} = req.params;
+        console.log(divisionID)
+        if(!divisionID){
+            return res.status(404).json({message:"Division Id required"});
+        }
+        const division = await Division.findOne({_id:divisionID});
+        return res.status(200).json(division);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
+}
+
+exports.getStudentSubjectInfo = async(req,res)=>{
+    try{
+        const studentID  = req.student.student_id; 
+        if(!studentID){
+            return res.status(404).json({message:"student id required"})
+        }
+        const mysubjects = await StudentSubjectInfo.find({std_id:studentID});
+        return res.status(200).json(mysubjects);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
+}
+
+exports.getStudentPracticalInfo = async(req,res)=>{
+    try{
+        const studentID  = req.student.student_id;
+        if(!studentID){
+            return res.status(404).json({message:"student id required"})
+        }
+        const mypracticals = await StudentPracticalInfo.find({std_id:studentID});
+        return res.status(200).json(mypracticals);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
 }

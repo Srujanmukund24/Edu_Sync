@@ -142,7 +142,7 @@ exports.getDivisions = async (req, res) => {
     try {
         // Fetch all divisions and populate the associated batches and teacher
         const divisions = await Division.find();
-        res.status(200).json(divisions );
+        res.status(200).json(divisions);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -117,10 +117,19 @@ app.get('/teacher/myChats', auth.authorizeTeacher, teacherController.myChats);
 app.get('/getSubjects', adminController.getSubjects);
 app.get('/getPracticals', adminController.getPracticals);
 
+app.get('/divisions/:divisionID',studentController.getDivisionByID);
+app.get(
+  "/getStudentSubjectInfo",
+  auth.authorizeStudent ,studentController.getStudentSubjectInfo
+);
+app.get(
+  "/getStudentPracticalInfo",
+  auth.authorizeStudent ,studentController.getStudentPracticalInfo
+);
 
 
-
-
+app.get("/student/myChats", auth.authorizeStudent, studentController.myChats);
+app.get("/teacher/myChats", auth.authorizeTeacher, teacherController.myChats);
 
 app.listen(port, () => {
     console.log(
