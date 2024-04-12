@@ -118,7 +118,8 @@ app.get('/getSubjects', adminController.getSubjects);
 app.get('/getPracticals', adminController.getPracticals);
 
 app.get('/divisions/:divisionID',studentController.getDivisionByID);
-
+app.get('/getStudentSubjectInfo',studentController.getStudentSubjectInfo);
+app.get('/getStudentPracticalInfo',studentController.getStudentPracticalInfo);
 
 
 

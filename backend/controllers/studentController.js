@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Assignment = require("../models/assignments");
 const Division = require("../models/division");
+const StudentSubjectInfo = require("../models/studentsubjectinfo");
+const StudentPracticalInfo = require("../models/studentpracticalinfo");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -215,6 +217,34 @@ exports.getDivisionByID = async(req,res)=>{
         }
         const division = await Division.findOne({_id:divisionID});
         return res.status(200).json(division);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
+}
+
+exports.getStudentSubjectInfo = async(req,res)=>{
+    try{
+        const {studentID} = req.body;
+        if(!studentID){
+            return res.status(404).json({message:"student id required"})
+        }
+        const mysubjects = await StudentSubjectInfo.find({std_id:studentID});
+        return res.status(200).json(mysubjects);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
+}
+
+exports.getStudentPracticalInfo = async(req,res)=>{
+    try{
+        const {studentID} = req.body;
+        if(!studentID){
+            return res.status(404).json({message:"student id required"})
+        }
+        const mypracticals = await StudentPracticalInfo.find({std_id:studentID});
+        return res.status(200).json(mypracticals);
     }
     catch(err){
         return res.status(400).json({message:err.message})
