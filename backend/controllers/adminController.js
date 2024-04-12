@@ -142,7 +142,7 @@ exports.getDivisions = async (req, res) => {
     try {
         // Fetch all divisions and populate the associated batches and teacher
         const divisions = await Division.find();
-        res.status(200).json(divisions );
+        res.status(200).json(divisions);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -217,6 +217,103 @@ exports.registerAdmin = async(req,res)=>{
    
 }
 
+exports.AddOrUpdateStudentsSubjectInfo = async (req, res) => {
+    try {
+        const { teacher_id, division_id, subName, year } = req.body;
+
+        if (!teacher_id || !division_id || !subName || !year) {
+            return res.status(400).send("Fill complete details");
+        }
+
+        // Find all students in the specified division and year
+        const students = await Student.find({ division: division_id, year: year });
+
+        // Update StudentSubjectInfo for each student
+        for (const student of students) {
+            // Update or create StudentSubjectInfo
+            await StudentSubjectInfo.findOneAndUpdate(
+                { std_id: student._id, subname: subName },
+                { std_id: student._id, subname: subName, teacher_id: teacher_id },
+                { upsert: true }
+            );
+        }
+
+        // Find the old teacher for the division and subject
+        const oldTeacher = await Teacher.findOne({
+            'division': { $elemMatch: { 'divID': division_id, 'subject': subName } }
+        });
+
+        if (oldTeacher) {
+            // Remove division and subject from old teacher's division array
+            oldTeacher.division = oldTeacher.division.filter(div => !(div.divID.equals(division_id) && div.subject === subName));
+            await oldTeacher.save();
+        }
+
+        // Find the new teacher
+        const newTeacher = await Teacher.findById(teacher_id);
+
+        // Add division and subject to new teacher's division array
+        const existingDivision = newTeacher.division.find(div => div.divID.equals(division_id) && div.subject === subName);
+        if (!existingDivision) {
+            newTeacher.division.push({ divID: division_id, subject: subName });
+            await newTeacher.save();
+        }
+
+        return res.status(200).json({ message: "Successfully updated student subject information" });
+
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
+
+exports.AddOrUpdateStudentsPracticalInfo = async (req, res) => {
+    try {
+        const { teacher_id, batch_id, practicalName, year } = req.body;
+
+        if (!teacher_id || !batch_id || !practicalName || !year) {
+            return res.status(400).send("Fill complete details");
+        }
+
+        // Find all students in the specified division and year
+        const students = await Student.find({ batch: batch_id, year: year });
+
+        // Update StudentSubjectInfo for each student
+        for (const student of students) {
+            // Update or create StudentSubjectInfo
+            await StudentPracticalInfo.findOneAndUpdate(
+                { std_id: student._id, pracsubname: practicalName },
+                { std_id: student._id, pracsubname: practicalName, teacher_id: teacher_id },
+                { upsert: true }
+            );
+        }
+
+        // Find the old teacher for the division and subject
+        const oldTeacher = await Teacher.findOne({
+            'batch': { $elemMatch: { 'batchID': batch_id, 'subject': practicalName } }
+        });
+
+        if (oldTeacher) {
+            // Remove division and subject from old teacher's division array
+            oldTeacher.batch = oldTeacher.batch.filter(batch => !(batch.batchID.equals(batch_id) && batch.subject === practicalName));
+            await oldTeacher.save();
+        }
+
+        // Find the new teacher
+        const newTeacher = await Teacher.findById(teacher_id);
+
+        // Add division and subject to new teacher's division array
+        const existingBatch = newTeacher.batch.find(batch => batch.batchID.equals(batch_id) && batch.subject === practicalName);
+        if (!existingBatch) {
+            newTeacher.batch.push({ batchID: batch_id, subject: practicalName });
+            await newTeacher.save();
+        }
+
+        return res.status(200).json({ message: "Successfully updated student practical information" });
+
+    } catch (err) {
+        return res.status(400).json({ message: err.message });
+    }
+};
 
 exports.addStudentSubjectInfo = async(req,res)=>{
     
@@ -233,10 +330,67 @@ exports.addStudentSubjectInfo = async(req,res)=>{
             return res.status(400).send("This division id doesnt exist in database");
         }
 
+        //find if teacher with divID and subject exists
+        const oldTeacher = await Teacher.findOne({
+            'division': {
+                $elemMatch: {
+                    'divID': divi._id,
+                    'subject': subjectName
+                }
+            }
+        })
+        //if exists then go and update(i.e delete from that array)
+        if(oldTeacher){
+            console.log('old',oldTeacher)
+            const updatedTeacher = await Teacher.findOneAndUpdate(
+                {
+                    'division': {
+                        $elemMatch: {
+                            'divID': divi._id,
+                            'subject': subjectName
+                        }
+                    }
+                },
+                {
+                    $pull: {
+                        'division': {'divID': divi._id,'subject': subjectName}
+                    }
+                },
+                { new: true }
+            );
+            await updatedTeacher.save();
+
+            //find new teacher to assign
+            const teacher = await Teacher.findOne({fname:firstName,lname:lastName});
+            if(!teacher){
+                return res.status(400).status("This teacher doesnt exist in database");
+            }
+            console.log('to assign',teacher);
+
+            //added division id and subject name in new teacher object
+            const divisionID = divi._id;
+            teacher.division.push({divID:divisionID,subject:subjectName});
+            console.log('pushed');
+            await teacher.save();
+            console.log('finding')
+
+            const subjects = await StudentSubjectInfo.find({teacher_id:oldTeacher._id,subname:subjectName});
+            console.log('found');
+            console.log('sub:',subjects)
+            for(const subject of subjects){
+                subject.teacher_id = teacher._id,
+                await subject.save();
+            }
+            return res.status(200).json({message:"successfully updated the teacher"})
+            
+        }
+
+        //find new teacher to assign
         const teacher = await Teacher.findOne({fname:firstName,lname:lastName});
         if(!teacher){
             return res.status(400).status("This teacher doesnt exist in database");
         }
+        console.log('new',teacher);
 
         //added division id and subect name in teacher object
         const divisionID = divi._id;
@@ -244,8 +398,7 @@ exports.addStudentSubjectInfo = async(req,res)=>{
         await teacher.save();
 
         //get list of all those students who belongs to division==division(e.g:"09") and year == year(e.g:"TE")
-        const students = await Student.find({division:divisionNum,year:year});
-
+        const students = await Student.find({division:divi._id,year:year});
         //iterate over each student and create subject schema for each
         const teacherID = teacher._id;
         for(const student of students){
@@ -346,38 +499,6 @@ exports.getCurrentAdmin=async(req,res)=>{
         res.status(500).json({error:error.message});
     }
 }
-exports.addStudentPracticalInfo = async(req,res)=>{
-    try{
-        const {batchID,teacherID,pracSubName} = req.body;
-        const batch = await Batch.findOne({_id:batchID});
-        const teacher = await Teacher.findOne({_id:teacherID});
-        if(!batch){
-            return res.status(404).json({message:"batch doesn't exist"});
-        }
-        if(!teacher){
-            return res.status(404).json({message:"teacher doesn't exist"});
-        }
-        if(!pracSubName){
-            return res.status(400).json({message:"subject name required"});
-        }
-        teacher.batch.push({batchID:batchID,subject:pracSubName});
-        await teacher.save();
-
-        const students = await Student.find({batch:batch.name});
-        for(const student of students){
-            const newObj = new StudentPracticalInfo({
-                std_id:student._id,
-                teacher_id:teacherID,
-                pracsubname:pracSubName
-            })
-            await newObj.save();
-        }
-        return res.status(200).json({message:"Practicals added successfully"}); 
-    }
-    catch(err){
-        return res.status(400).json({message:err.message})
-    }
-}
 
 
 exports.addSubject = async(req,res)=>{
@@ -425,5 +546,24 @@ exports.addPractical = async(req,res)=>{
     
 }
 
+exports.getSubjects = async(req,res)=>{
+    try{
+        const subjects = await Subject.find({});
+        return res.status(200).json(subjects);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+}
+
+exports.getPracticals = async(req,res)=>{
+    try{
+        const practicals = await Practical.find({});
+        return res.status(200).json(practicals);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message});
+    }
+}
 
 

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const studnetSubjectInfoSchema = new mongoose.Schema({
+const studentSubjectInfoSchema = new mongoose.Schema({
     std_id: {
         type: mongoose.Schema.Types.ObjectId, // Assuming std_id is referencing the Student model
         ref: 'Student', // Name of the referenced model
@@ -35,6 +35,6 @@ const studnetSubjectInfoSchema = new mongoose.Schema({
     }
 });
 
-const StudentSubjectInfo = mongoose.model('studnetSubjectInfoSchema', studnetSubjectInfoSchema);
+const StudentSubjectInfo = mongoose.model('studnetSubjectInfoSchema', studentSubjectInfoSchema);
 
 module.exports = StudentSubjectInfo;

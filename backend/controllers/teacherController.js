@@ -5,13 +5,137 @@ const Student = require('../models/student');
 const Conversation = require('../models/conversation');
 const Assignment = require('../models/assignments');
 const Subject = require('../models/studentsubjectinfo');
+const excelToJson = require("convert-excel-to-json");
+const fs = require("fs");
+const XLSX = require("xlsx");
+const Practical = require('../models/studentpracticalinfo');
 
+// --------------------------------------------Controller for assigning marks to student-------------------------------------------
+// Note : hearders of Excel sheet  rollno | subname1 | subname2 | subname3  (write rollno as it is and subname in uppercase)
+//                             eg. rollno  | CC      | AI       | DSBDA
+//                                 31101   | 50      | 80       | 90
+// SheetName should match with test_type Name eg.UT1, UT2, INSEM (exel file chya aat aste sheet bottom la name change karu shakta)
+
+const excelDataToSubjects = async (excelData, type) => {
+    try {
+        for (let sheetName in excelData) {
+            const data = excelData[sheetName];
+            console.log("data - ",data);
+            for (let row of data) {
+                const { rollno, ...subjectMarks } = row;
+                const student = await Student.findOne({ rollno: rollno });
+                if (!student) {
+                    console.log(`Student with Roll No ${rollno} not found`);
+                    continue; 
+                }
+
+                for (let subname in subjectMarks) {
+                    const existingSubject = type==="practical" ? await Practical.findOne({ std_id: student._id, pracsubname : subname.toUpperCase() }) : await Subject.findOne({ std_id: student._id, subname : subname.toUpperCase() });
+                    if (!existingSubject) {
+                        console.log(`Subject '${subname}' not found for student with Roll No ${rollno}`);
+                        throw new Error(`Subject '${subname}' not found for student with Roll No ${rollno}`);
+                    }
+
+                    const existingMarkIndex = existingSubject.marks.findIndex((ele) => ele.test_type === sheetName);
+                    if (existingMarkIndex !== -1) {
+                        existingSubject.marks[existingMarkIndex].marks = subjectMarks[subname];
+                    } else {
+                        existingSubject.marks.push({ test_type: sheetName, marks: subjectMarks[subname] });
+                    }
+
+                    await existingSubject.save();
+                    console.log(`Marks updated for subject '${subname}' for student with Roll No ${rollno}`);
+                }
+            }
+        }
+    } catch (err) {
+        console.log("Error storing subject marks:", err);
+        throw err;
+    }
+};
+
+const importExcelData2MongoDB = async (filePath,type) => {
+    try {
+        const workbook = XLSX.readFile(filePath);
+        const sheetNames = workbook.SheetNames;
+        console.log("Sheet names: ", sheetNames);
+
+        const sheet_array = [];
+        
+        sheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            const filterHeader = {};
+            for(let key in worksheet){
+                if(key.endsWith('1') && worksheet[key].hasOwnProperty('v')){
+                    const newKey = key.substring(0, key.length - 1);
+                    const val = worksheet[key].v;
+                    const str = val.toLowerCase();
+                    filterHeader[newKey] = str.trim();
+                }
+            }
+
+            console.log(filterHeader);
+            sheet_array.push({
+                name: sheetName, 
+                header: {
+                    rows: 1,
+                }, 
+                columnToKey: filterHeader,
+            });  
+        }); 
+
+        const excelData = await excelToJson({
+            sourceFile: filePath,
+            sheets: sheet_array
+        });
+
+        console.log("Excel data : ", excelData);
+        excelDataToSubjects(excelData,type);
+        fs.unlinkSync(filePath); 
+    } catch (err) {
+        console.log("Error importing data to MongoDB:", err);
+        throw err;
+    }
+};
+
+exports.uploadfile = async (req, res) => {
+    try {
+        const filePath = await req.file.path; 
+        console.log(filePath);
+        await importExcelData2MongoDB(filePath,"subject"); 
+        res.json({
+            msg: "File Uploaded",
+            file: req.file?.filename,
+        });
+    } catch (err) {
+        console.log("Error uploading file:", err);
+        res.status(500).json({ error: "Failed to upload file" });
+    }
+};
+
+exports.uploadfilePractical = async (req, res) => {
+    try {
+        const filePath = await req.file.path; 
+        console.log(filePath);
+        await importExcelData2MongoDB(filePath,"practical"); 
+        res.json({
+            msg: "File Uploaded",
+            file: req.file?.filename,
+        });
+    } catch (err) {
+        console.log("Error uploading file:", err);
+        res.status(500).json({ error: "Failed to upload file" });
+    }
+};
+
+
+//----------------------------------------------------------------------------------------------------------------------------------
 exports.registerTeacher = async(req,res)=>{
     
     const {regid,fname,lname,email,mobile,password} = req.body;
    
     if(!regid || !fname || !lname || !email || !mobile || !password){
-        return res.status(400).send("Fill complete details")
+        return res.status(400).send("Fill complete details") 
     }
     
     const user = await Teacher.findOne({email:email})
@@ -249,12 +373,12 @@ exports.getTeacherByID = async(req,res)=>{
     
 }
 
-exports.myChats = async (req, res) => {
-  const teacherID = req.teacher.teacher_id;
-  if (!teacherID) {
-    return res.status(404).json({ message: "teacherID not found" });
-  }
+exports.myChats = async(req,res)=>{
+    const teacherID = req.teacher.teacher_id;
+    if(!teacherID){
+        return res.status(404).json({message:"teacherID not found"});
+    }
 
-  const chats = await Conversation.find({ teacherId: teacherID });
-  return res.status(200).json(chats);
-};
+    const chats = await Conversation.find({teacherId:teacherID});
+    return res.status(200).json(chats);
+}
