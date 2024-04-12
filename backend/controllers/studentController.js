@@ -1,6 +1,5 @@
 const Student = require("../models/student")
-const Teacher = require("../models/teacher")
-
+const Teacher = require("../models/teacher") 
 const Conversation = require("../models/conversation")
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken');
@@ -194,3 +193,12 @@ exports.updateAssignment = async(req,res)=>{
     }
 }
 
+exports.myChats = async (req, res) => {
+  const studentID = req.student.student_id;
+  if (!studentID) {
+    return res.status(404).json({ message: "studentID not found" });
+  }
+
+  const chats = await Conversation.find({ studentId: studentID });
+  return res.status(200).json(chats);
+};
