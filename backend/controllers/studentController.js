@@ -5,6 +5,7 @@ const Conversation = require("../models/conversation")
 const bcrypt = require('bcrypt'); 
 const jwt = require('jsonwebtoken');
 const Assignment = require("../models/assignments");
+const Division = require("../models/division");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -203,4 +204,19 @@ exports.myChats = async(req,res)=>{
     const chats = await Conversation.find({studentId:studentID});
     return res.status(200).json(chats);
     
+}
+
+exports.getDivisionByID = async(req,res)=>{
+    try{
+        const {divisionID} = req.params;
+        console.log(divisionID)
+        if(!divisionID){
+            return res.status(404).json({message:"Division Id required"});
+        }
+        const division = await Division.findOne({_id:divisionID});
+        return res.status(200).json(division);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
 }

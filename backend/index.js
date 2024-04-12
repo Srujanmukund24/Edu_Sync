@@ -117,7 +117,7 @@ app.get('/teacher/myChats', auth.authorizeTeacher, teacherController.myChats);
 app.get('/getSubjects', adminController.getSubjects);
 app.get('/getPracticals', adminController.getPracticals);
 
-
+app.get('/divisions/:divisionID',studentController.getDivisionByID);
 
 
 
