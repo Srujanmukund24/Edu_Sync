@@ -7,6 +7,7 @@ const Assignment = require("../models/assignments");
 const Division = require("../models/division");
 const StudentSubjectInfo = require("../models/studentsubjectinfo");
 const StudentPracticalInfo = require("../models/studentpracticalinfo");
+const Batch = require("../models/batch");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -231,6 +232,20 @@ exports.getDivisionByID = async(req,res)=>{
         return res.status(400).json({message:err.message})
     }
 }
+
+exports.getBatchByID = async (req, res) => {
+  try {
+    const { batchID } = req.params;
+    console.log(batchID);
+    if (!batchID) {
+      return res.status(404).json({ message: "Division Id required" });
+    }
+    const batch = await Batch.findOne({ _id: batchID });
+    return res.status(200).json(batch);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
 
 exports.getStudentSubjectInfo = async(req,res)=>{
     try{
