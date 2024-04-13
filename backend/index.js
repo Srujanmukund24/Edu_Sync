@@ -99,7 +99,6 @@ app.get('/myBatchs', auth.authorizeTeacher, teacherController.getMyBatches);
 app.post('/createAssignment', auth.authorizeTeacher, teacherController.createAssignment);
 app.post('/addStudentsPracticalInfo', adminController.AddOrUpdateStudentsPracticalInfo);
 
-
 app.get('/getAssignments', auth.authorizeStudent, studentController.getAssignments);
 app.get('/getCompleted', auth.authorizeStudent, studentController.getCompletedAssignments);
 app.get('/getIncomplete', auth.authorizeStudent, studentController.getIncompleteAssignments);
@@ -118,6 +117,7 @@ app.get('/getSubjects', adminController.getSubjects);
 app.get('/getPracticals', adminController.getPracticals);
 
 app.get('/divisions/:divisionID',studentController.getDivisionByID);
+app.get("/batches/:batchID", studentController.getBatchByID);
 app.get(
   "/getStudentSubjectInfo",
   auth.authorizeStudent ,studentController.getStudentSubjectInfo

@@ -7,6 +7,7 @@ const Assignment = require("../models/assignments");
 const Division = require("../models/division");
 const StudentSubjectInfo = require("../models/studentsubjectinfo");
 const StudentPracticalInfo = require("../models/studentpracticalinfo");
+const Batch = require("../models/batch");
 
 
 exports.registerStudent = async(req,res)=>{
@@ -63,10 +64,14 @@ exports.loginStudent = async(req,res)=>{
         const token=jwt.sign({email,student_id:user._id},
             process.env.SECRET_KEY,
             {
-                expiresIn:"1m",
+                expiresIn:"1d",
             }
         )
-        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000})
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        });
         user.token=token;
         console.log("Login successfull")
         return res.status(200).json(user)
@@ -221,6 +226,20 @@ exports.getDivisionByID = async(req,res)=>{
         return res.status(400).json({message:err.message})
     }
 }
+
+exports.getBatchByID = async (req, res) => {
+  try {
+    const { batchID } = req.params;
+    console.log(batchID);
+    if (!batchID) {
+      return res.status(404).json({ message: "Division Id required" });
+    }
+    const batch = await Batch.findOne({ _id: batchID });
+    return res.status(200).json(batch);
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+};
 
 exports.getStudentSubjectInfo = async(req,res)=>{
     try{

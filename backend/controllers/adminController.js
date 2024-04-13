@@ -173,10 +173,14 @@ exports.loginAdmin = async(req,res)=>{
         const token=jwt.sign({email,admin_id:user._id},
             process.env.SECRET_KEY,
             {
-                expiresIn:"1m",
+                expiresIn:"1d",
             }
         )
-        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000})
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        });
         user.token=token;
         console.log("Login successfull")
         return res.status(200).json(user)
