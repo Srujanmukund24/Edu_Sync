@@ -174,10 +174,10 @@ exports.loginTeacher = async(req,res)=>{
     try{
         const token = jwt.sign({email,teacher_id:user._id},process.env.SECRET_KEY,
             {
-                expiresIn:'1m',
+                expiresIn:'1d',
             }
         )
-        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000});
+        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000*24*60});
         user.token = token;
         console.log(user);
         return res.status(200).json(user)

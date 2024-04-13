@@ -63,10 +63,10 @@ exports.loginStudent = async(req,res)=>{
         const token=jwt.sign({email,student_id:user._id},
             process.env.SECRET_KEY,
             {
-                expiresIn:"1m",
+                expiresIn:"1d",
             }
         )
-        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000})
+        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000*60*24})
         user.token=token;
         console.log("Login successfull")
         return res.status(200).json(user)
@@ -202,8 +202,18 @@ exports.myChats = async(req,res)=>{
         return res.status(404).json({message:"studentID not found"});
     }
 
-    const chats = await Conversation.find({studentId:studentID});
-    return res.status(200).json(chats);
+    // const chats = await Conversation.find({studentId:studentID});
+    try {
+        const chats = await Conversation.find({ studentId: studentID });
+        const chatsWithTechNames = await Promise.all(chats.map(async (item) => {
+            const tech = await Teacher.findOne({ _id: item.teacherId });
+            const name = tech ? `${tech.fname} ${tech.lname}` : "Unknown";
+            return { ...item._doc, techName: name };
+        }));
+        return res.status(200).json(chatsWithTechNames);
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
     
 }
 
