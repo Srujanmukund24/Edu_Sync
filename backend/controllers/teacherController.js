@@ -377,6 +377,15 @@ exports.myChats = async(req,res)=>{
         return res.status(404).json({message:"teacherID not found"});
     }
 
-    const chats = await Conversation.find({teacherId:teacherID});
-    return res.status(200).json(chats);
+    try {
+        const chats = await Conversation.find({ teacherId: teacherID });
+        const chatsWithStudNames = await Promise.all(chats.map(async (item) => {
+            const stud = await Student.findOne({ _id: item.studentId });
+            const name = stud ? `${stud.fname} ${stud.lname}` : "Unknown";
+            return { ...item._doc, studName: name };
+        }));
+        return res.status(200).json(chatsWithStudNames);
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
