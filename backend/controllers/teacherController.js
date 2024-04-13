@@ -177,11 +177,7 @@ exports.loginTeacher = async(req,res)=>{
                 expiresIn:'1d',
             }
         )
-        res.cookie("jwt", token, {
-          httpOnly: true,
-          secure: true,
-          maxAge: 24 * 60 * 60 * 1000,
-        });
+        res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000*24*60});
         user.token = token;
         console.log(user);
         return res.status(200).json(user)
@@ -193,13 +189,11 @@ exports.loginTeacher = async(req,res)=>{
 }
 
 exports.getStudentFromDivision = async(req,res)=>{
-    const {divname} = req.params;
+    const {divID} = req.params;
     console.log(req.params);
 
-    const year = divname.slice(0,2);
-    const division  = divname.slice(2);
-
-    const students = await Student.find({division:division,year:year});
+    const students = await Student.find({division : divID});
+    console.log(students);
     if(!students){
         return res.status(404).json({message:"students not found"});
     }
@@ -207,10 +201,10 @@ exports.getStudentFromDivision = async(req,res)=>{
 }
 
 exports.getStudentFromBatch = async(req,res)=>{
-    const {batchname} = req.params;
+    const {batchID} = req.params;
     console.log(req.params);
 
-    const students = await Student.find({batch:batchname});
+    const students = await Student.find({batch:batchID});
     if(!students){
         return res.status(404).json({message:"students not found"});
     }

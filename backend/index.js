@@ -80,8 +80,8 @@ app.get('/getdivision', adminController.getDivisions);
 app.post('/addmentorshipgrp', adminController.addMentorshipGroup);
 app.get('/getmentorshipgrp', adminController.getMentorshipGroups);
 
-app.get('/students/division/:divname', auth.authorizeTeacher, teacherController.getStudentFromDivision);
-app.get('/students/batch/:batchname', auth.authorizeTeacher, teacherController.getStudentFromBatch);
+app.get('/students/division/:divID',  teacherController.getStudentFromDivision);
+app.get('/students/batch/:batchID', teacherController.getStudentFromBatch);
 app.get('/students/:regid', auth.authorizeTeacher, teacherController.getStudentById);
 
 app.get('/getadmin', auth.authorizeAdmin, adminController.getCurrentAdmin)
