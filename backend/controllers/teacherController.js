@@ -10,6 +10,8 @@ const fs = require("fs");
 const XLSX = require("xlsx");
 const Practical = require('../models/studentpracticalinfo');
 const MentorshipGroup = require('../models/mentorshipGrp');
+const Division = require('../models/division')
+const Batch = require('../models/batch')
 
 // --------------------------------------------Controller for assigning marks to student-------------------------------------------
 // Note : hearders of Excel sheet  rollno | subname1 | subname2 | subname3  (write rollno as it is and subname in uppercase)
@@ -294,9 +296,17 @@ exports.getMyDivisions = async(req,res)=>{
     if(!teacherObj){
         return res.status(404).json({message:"Teacher object not found"});
     }
-    const divisions = teacherObj.division;
-    console.log(divisions)
-    return res.status(200).json(divisions);
+    try{
+        const divisions = teacherObj.division;
+        const divisionWithNames = await Promise.all(divisions.map(async (item) => {
+            const div = await Division.findOne({ _id: item.divID });
+            const name = div ? `${div.year}${div.division}` : "Unknown";
+            return { ...item._doc, divName: name };
+        }));
+        return res.status(200).json(divisionWithNames);
+    }catch(err){
+        return res.status(400).json({message:err.message})
+    }
 }
 
 exports.getMyBatches = async(req,res)=>{
@@ -306,9 +316,18 @@ exports.getMyBatches = async(req,res)=>{
     if(!teacherObj){
         return res.status(404).json({message:"Teacher object not found"});
     }
-    const batches = teacherObj.batch;
-    console.log(batches)
-    return res.status(200).json(batches);
+    try{
+        const batches = teacherObj.batch;
+        const batchWithNames = await Promise.all(batches.map(async (item) => {
+            const batch = await Batch.findOne({ _id: item.batchID });
+            const name = batch ? `${batch.name}` : "Unknown";
+            return { ...item._doc, batchName: name };
+        }));
+        return res.status(200).json(batchWithNames);
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
 }
 
 exports.createAssignment = async(req,res) =>{

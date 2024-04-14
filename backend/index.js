@@ -95,7 +95,7 @@ app.post('/studentchats/:teacherId', auth.authorizeStudent, studentController.ad
 app.get('/getstudentchats/:teacherId', auth.authorizeStudent, studentController.getStudentsChats);
 
 app.get('/myDivisions', auth.authorizeTeacher, teacherController.getMyDivisions);
-app.get('/myBatchs', auth.authorizeTeacher, teacherController.getMyBatches);
+app.get('/myBatches', auth.authorizeTeacher, teacherController.getMyBatches);
 
 app.post('/createAssignment', auth.authorizeTeacher, teacherController.createAssignment);
 app.post('/addStudentsPracticalInfo', adminController.AddOrUpdateStudentsPracticalInfo);
