@@ -435,3 +435,22 @@ exports.myChats = async(req,res)=>{
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+
+exports.getAssignmentsForTeacher = async (req, res) => {
+    try {
+        const teacherID = req.teacher.teacher_id;
+        const assignments = await Assignment.find({ teacher_id: teacherID })
+            .populate({
+                path: 'teacher_id',
+                select: 'fname lname -_id' // Select first and last name of teacher
+            })
+            .populate({
+                path: 'student_id',
+                select: 'fname lname -_id' // Select first and last name of student
+            })
+
+        return res.status(200).json(assignments);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+};

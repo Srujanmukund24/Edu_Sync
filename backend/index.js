@@ -101,6 +101,7 @@ app.post('/createAssignment', auth.authorizeTeacher, teacherController.createAss
 app.post('/addStudentsPracticalInfo', adminController.AddOrUpdateStudentsPracticalInfo);
 
 app.get('/getAssignments', auth.authorizeStudent, studentController.getAssignments);
+app.get('/getAssignmentsforteacher', auth.authorizeTeacher, teacherController.getAssignmentsForTeacher);
 app.get('/getCompleted', auth.authorizeStudent, studentController.getCompletedAssignments);
 app.get('/getIncomplete', auth.authorizeStudent, studentController.getIncompleteAssignments);
 
