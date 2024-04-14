@@ -472,15 +472,7 @@ exports.addMentorshipGroup = async (req, res) => {
 exports.getMentorshipGroups = async (req, res) => {
     try {
         // Fetch all mentorship groups and populate teacher and student fields with names
-        const mentorshipGroups = await MentorshipGroup.find({})
-            .populate({
-                path: 'teacher_id',
-                select: 'fname lname -_id' // Select first and last name of teacher
-            })
-            .populate({
-                path: 'std_ids',
-                select: 'fname lname -_id' // Select first and last name of students
-            });
+        const mentorshipGroups = await MentorshipGroup.find({});
 
         res.status(200).json(mentorshipGroups);
     } catch (error) {

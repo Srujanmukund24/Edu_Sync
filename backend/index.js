@@ -79,6 +79,7 @@ app.get('/getdivision', adminController.getDivisions);
 
 app.post('/addmentorshipgrp', adminController.addMentorshipGroup);
 app.get('/getmentorshipgrp', adminController.getMentorshipGroups);
+app.get('/getgrpbyteacher',auth.authorizeTeacher, teacherController.getGroupbyTeacher);
 
 app.get('/students/division/:divID',  teacherController.getStudentFromDivision);
 app.get('/students/batch/:batchID', teacherController.getStudentFromBatch);

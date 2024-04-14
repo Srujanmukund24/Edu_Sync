@@ -9,6 +9,7 @@ const excelToJson = require("convert-excel-to-json");
 const fs = require("fs");
 const XLSX = require("xlsx");
 const Practical = require('../models/studentpracticalinfo');
+const MentorshipGroup = require('../models/mentorshipGrp');
 
 // --------------------------------------------Controller for assigning marks to student-------------------------------------------
 // Note : hearders of Excel sheet  rollno | subname1 | subname2 | subname3  (write rollno as it is and subname in uppercase)
@@ -369,6 +370,32 @@ exports.getTeacherByID = async(req,res)=>{
         return res.status(400).json({message:err.message});
     }
     
+}
+exports.getGroupbyTeacher=async(req,res)=>{
+    try {
+        const teacherId = req.teacher.teacher_id;
+
+        // Fetch mentorship groups for the specified teacher and populate teacher and student fields with names
+        const mentorshipGroups = await MentorshipGroup.find({ teacher_id: teacherId })
+            .populate({
+                path: 'std_ids',
+                select: 'fname lname -_id' // Select first and last name of students
+            })
+            .select('type group_id std_ids teacher_id');
+
+        // Construct array with student names
+        const mentorshipGroupsFormatted = mentorshipGroups.map(group => ({
+            _id: group._id,
+            type: group.type,
+            group_id: group.group_id,
+            student_names: group.std_ids.map(student => `${student.fname} ${student.lname}`),
+            teacherID:group.teacher_id
+        }));
+
+        res.status(200).json(mentorshipGroupsFormatted);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 }
 
 exports.myChats = async(req,res)=>{
