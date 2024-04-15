@@ -31,19 +31,22 @@ const excelDataToSubjects = async (excelData, type) => {
                 }
 
                 for (let subname in subjectMarks) {
-                    const existingSubject = type==="practical" ? await Practical.findOne({ std_id: student._id, pracsubname : subname.toUpperCase() }) : await Subject.findOne({ std_id: student._id, subname : subname.toUpperCase() });
+                    const existingSubject = (type==="practical" || type=== "attendencePractical") ? await Practical.findOne({ std_id: student._id, pracsubname : subname.toUpperCase() }) : await Subject.findOne({ std_id: student._id, subname : subname.toUpperCase() });
                     if (!existingSubject) {
                         console.log(`Subject '${subname}' not found for student with Roll No ${rollno}`);
-                        throw new Error(`Subject '${subname}' not found for student with Roll No ${rollno}`);
+                        return new Error(`Subject '${subname}' not found for student with Roll No ${rollno}`);
                     }
-
-                    const existingMarkIndex = existingSubject.marks.findIndex((ele) => ele.test_type === sheetName);
-                    if (existingMarkIndex !== -1) {
-                        existingSubject.marks[existingMarkIndex].marks = subjectMarks[subname];
-                    } else {
-                        existingSubject.marks.push({ test_type: sheetName, marks: subjectMarks[subname] });
+ 
+                    if(type==="attendencePractical" || type === "attendenceSubject"){
+                        existingSubject.attendance = subjectMarks[subname]
+                    }else{
+                        const existingMarkIndex = existingSubject.marks.findIndex((ele) => ele.test_type === sheetName);
+                        if (existingMarkIndex !== -1) {
+                            existingSubject.marks[existingMarkIndex].marks = subjectMarks[subname];
+                        } else {
+                            existingSubject.marks.push({ test_type: sheetName, marks: subjectMarks[subname] });
+                        }
                     }
-
                     await existingSubject.save();
                     console.log(`Marks updated for subject '${subname}' for student with Roll No ${rollno}`);
                 }
@@ -119,6 +122,36 @@ exports.uploadfilePractical = async (req, res) => {
         const filePath = await req.file.path; 
         console.log(filePath);
         await importExcelData2MongoDB(filePath,"practical"); 
+        res.json({
+            msg: "File Uploaded",
+            file: req.file?.filename,
+        });
+    } catch (err) {
+        console.log("Error uploading file:", err);
+        res.status(500).json({ error: "Failed to upload file" });
+    }
+};
+
+exports.uploadfileAttendenceSubject = async (req, res) => {
+    try {
+        const filePath = await req.file.path; 
+        console.log(filePath);
+        await importExcelData2MongoDB(filePath,"attendenceSubject"); 
+        res.json({
+            msg: "File Uploaded",
+            file: req.file?.filename,
+        });
+    } catch (err) {
+        console.log("Error uploading file:", err);
+        res.status(500).json({ error: "Failed to upload file" });
+    }
+};
+
+exports.uploadfileAttendencePractical = async (req, res) => {
+    try {
+        const filePath = await req.file.path; 
+        console.log(filePath);
+        await importExcelData2MongoDB(filePath,"attendencePractical"); 
         res.json({
             msg: "File Uploaded",
             file: req.file?.filename,

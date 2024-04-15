@@ -56,13 +56,16 @@ const upload = multer({ storage: storage });
 
 app.post("/addOrUpdateMarksOfSubjects", upload.single("uploadfile"), teacherController.uploadfile);
 app.post("/addOrUpdateMarksOfPractical", upload.single("uploadfile"), teacherController.uploadfilePractical);
+app.post("/addOrUpdateAttendenceOfSubject", upload.single("uploadfile"), teacherController.uploadfileAttendenceSubject);
+app.post("/addOrUpdateAttendenceOfPractical", upload.single("uploadfile"), teacherController.uploadfileAttendencePractical);
+
 
 
 app.post('/registerTeacher', teacherController.registerTeacher);
 app.post('/registerStudent', studentController.registerStudent);
-app.post('/loginStudent', studentController.loginStudent);
+app.post('/loginStudent', studentController.loginStudent); 
 app.post('/loginTeacher', teacherController.loginTeacher);
-app.post('/loginAdmin', adminController.loginAdmin);
+app.post('/loginAdmin', adminController.loginAdmin); 
 app.delete('/removeTeacher/:regid', adminController.removeTeacher);
 app.delete('/removeStudent/:regid', adminController.removeStudent);
 app.post('/addStudentsSubjectInfo', adminController.AddOrUpdateStudentsSubjectInfo);
