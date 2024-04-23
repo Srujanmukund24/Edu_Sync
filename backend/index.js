@@ -60,7 +60,6 @@ app.post("/addOrUpdateAttendenceOfSubject", upload.single("uploadfile"), teacher
 app.post("/addOrUpdateAttendenceOfPractical", upload.single("uploadfile"), teacherController.uploadfileAttendencePractical);
 
 
-
 app.post('/registerTeacher', teacherController.registerTeacher);
 app.post('/registerStudent', studentController.registerStudent);
 app.post('/loginStudent', studentController.loginStudent); 
@@ -73,7 +72,7 @@ app.post('/addStudentsSubjectInfo', adminController.AddOrUpdateStudentsSubjectIn
 
 
 app.get('/getstudents', adminController.getStudents);
-app.get('/getteachers', adminController.getTeachers);
+app.get('/getteachers', adminController.getTeachers); 
 app.get('/getbatches', adminController.getBatches); 
 app.post('/addbatches', adminController.addBatch);
 
