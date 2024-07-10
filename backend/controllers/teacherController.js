@@ -156,7 +156,7 @@ exports.registerTeacher = async(req,res)=>{
         })
         await newTeacher.save();
        
-        return res.status(200).json(newTeacher);
+        return res.status(200).json(newTeacher);0
     }
     catch(err){
         return res.status(400).json({message:err.message});
