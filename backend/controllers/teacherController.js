@@ -12,6 +12,9 @@ const Practical = require('../models/studentpracticalinfo');
 const MentorshipGroup = require('../models/mentorshipGrp');
 const Division = require('../models/division')
 const Batch = require('../models/batch')
+const StudentPracticalInfo = require('../models/studentpracticalinfo')
+const StudentSubjectInfo = require('../models/studentsubjectinfo')
+const {ObjectId} =require('mongodb')
 
 // --------------------------------------------Controller for assigning marks to student-------------------------------------------
 // Note : hearders of Excel sheet  rollno | subname1 | subname2 | subname3  (write rollno as it is and subname in uppercase)
@@ -180,6 +183,7 @@ exports.loginTeacher = async(req,res)=>{
                 expiresIn:'1d',
             }
         )
+        console.log('token',token)
         res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000*24*60});
         user.token = token;
         console.log(user);
@@ -419,6 +423,7 @@ exports.getGroupbyTeacher=async(req,res)=>{
 
 exports.myChats = async(req,res)=>{
     const teacherID = req.teacher.teacher_id;
+    console.log('TID : ',teacherID)
     if(!teacherID){
         return res.status(404).json({message:"teacherID not found"});
     }
@@ -454,3 +459,72 @@ exports.getAssignmentsForTeacher = async (req, res) => {
         return res.status(500).json({ error: error.message });
     }
 };
+
+exports.updateTicketStatus = async (req, res) => {
+    try {
+        const teacherId = req.teacher.teacher_id;
+        const { studentId, subjectId, forLab, newStatus } = req.body;
+        const convertedStudentId = new ObjectId(studentId);
+        const convertedSubjectId = new ObjectId(subjectId);
+
+        if (forLab) {
+            const subject = await StudentPracticalInfo.findOne({
+                teacher_id: teacherId,
+                std_id: convertedStudentId
+            });
+
+            if (!subject || !convertedSubjectId.equals(subject._id)) {
+                return res.status(404).json({ message: "Practical Info not found for this particular pair of student and teacher" });
+            }
+
+            subject.sub_ticket_approval = newStatus;
+            await subject.save();
+
+            return res.status(200).json(subject);
+        } else {
+            const subject = await StudentSubjectInfo.findOne({
+                teacher_id: teacherId,
+                std_id: convertedStudentId
+            });
+
+            if (!subject || !convertedSubjectId.equals(subject._id)) {
+                return res.status(404).json({ message: "Subject Info not found for this particular pair of student and teacher" });
+            }
+
+            subject.sub_ticket_approval = newStatus;
+            await subject.save();
+
+            return res.status(200).json(subject);
+        }
+    } catch (err) {
+        console.log(err.message);
+        return res.status(400).json({ message: err.message });
+    }
+};
+
+exports.getCompleteStudentDetails = async(req,res)=>{
+    try{
+        const {studentID} = req.params;
+        const studentObj={};
+        const student = await Student.findOne({_id:studentID});
+        console.log(student);
+        studentObj.fname = student.fname;
+        studentObj.lname = student.lname;
+        studentObj.email = student.email;
+        studentObj.roll = student.roll;
+        studentObj.attendance = student.attendance;
+        studentObj.ccapproved = student.ccapproved;
+        
+
+        const subjects = await StudentSubjectInfo.find({std_id:studentID});
+        const practicals = await StudentPracticalInfo.find({std_id:studentID});
+        studentObj.subjects = subjects;
+        studentObj.practicals = practicals;
+        
+        return res.status(200).json(studentObj)
+    }
+    catch(err){
+        return res.status(200).json({message:err.message})
+    }
+    
+}

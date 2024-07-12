@@ -133,6 +133,10 @@ app.get(
 app.get("/student/myChats", auth.authorizeStudent, studentController.myChats);
 app.get("/teacher/myChats", auth.authorizeTeacher, teacherController.myChats);
 
+app.put("/updateTicketStatus",auth.authorizeTeacher,teacherController.updateTicketStatus);
+app.get("/getCompleteStudentDetails/:studentID",teacherController.getCompleteStudentDetails);
+
+
 app.listen(port, () => {
     console.log(
         `Node Server Running on Port ${process.env.PORT || 8080}`
