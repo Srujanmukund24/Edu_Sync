@@ -135,7 +135,8 @@ app.get("/teacher/myChats", auth.authorizeTeacher, teacherController.myChats);
 
 app.put("/updateTicketStatus",auth.authorizeTeacher,teacherController.updateTicketStatus);
 app.get("/getCompleteStudentDetails/:studentID",teacherController.getCompleteStudentDetails);
-
+app.get("/getStudentsForCC",auth.authorizeTeacher,teacherController.getStudentsForCC);
+app.put("/updateFinalTicketStatus/:studentID",auth.authorizeTeacher,teacherController.updateFinalTicketStatus);
 
 app.listen(port, () => {
     console.log(

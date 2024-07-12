@@ -183,10 +183,10 @@ exports.loginTeacher = async(req,res)=>{
                 expiresIn:'1d',
             }
         )
-        console.log('token',token)
+        // console.log('token',token)
         res.cookie("jwt",token,{httpOnly:true,secure:true,maxAge:60000*24*60});
         user.token = token;
-        console.log(user);
+        // console.log(user);
         return res.status(200).json(user)
 
     }
@@ -502,6 +502,38 @@ exports.updateTicketStatus = async (req, res) => {
     }
 };
 
+exports.updateFinalTicketStatus = async(req,res)=>{
+    try{
+        const teacherID = req.teacher.teacher_id;
+        const {studentID} = req.params;
+        const {newStatus} = req.body;
+        console.log(req.body)
+
+        const student = await Student.findOne({_id:studentID});
+        if(!student){
+            return res.status(404).json({message:"student not found"})
+        }
+
+        const divi = await Division.findOne({_id:student.division});
+        const convertedTeacherID = new ObjectId(teacherID)
+
+        if(!convertedTeacherID.equals(divi.CCID)){
+            return res.status(400).json({message:"Not allowed to edit (not CC of this student)"})
+        }
+        console.log('original ',student)
+        student.ccapproved = newStatus;
+        await student.save();
+        console.log('after  ',student)
+
+        return res.status(200).json(student);
+        
+    }
+    catch(err){
+        console.log(err)
+        return res.status(400).json({message:err.message});
+    }
+}
+
 exports.getCompleteStudentDetails = async(req,res)=>{
     try{
         const {studentID} = req.params;
@@ -527,4 +559,21 @@ exports.getCompleteStudentDetails = async(req,res)=>{
         return res.status(200).json({message:err.message})
     }
     
+}
+
+exports.getStudentsForCC = async(req,res)=>{
+    try{
+        const teacherID = req.teacher.teacher_id;
+
+        const divi = await Division.findOne({CCID:teacherID});
+        if(!divi){
+            return res.status(404).json({message:"Teacher is Not a CC"});
+        }
+        console.log(divi);
+        const students = await Student.find({division:divi._id})
+        return res.status(200).json(students)
+    }
+    catch(err){
+        return res.status(400).json({message:err.message})
+    }
 }
