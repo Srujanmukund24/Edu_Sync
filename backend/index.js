@@ -35,6 +35,7 @@ const clientUrl = process.env.CLIENT_URL;
 app.use(cors({
     credentials: true,
     origin: clientUrl,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
 }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -133,7 +134,7 @@ app.get(
 app.get("/student/myChats", auth.authorizeStudent, studentController.myChats);
 app.get("/teacher/myChats", auth.authorizeTeacher, teacherController.myChats);
 
-app.put("/updateTicketStatus",auth.authorizeTeacher,teacherController.updateTicketStatus);
+app.post("/updateTicketStatus",auth.authorizeTeacher,teacherController.updateTicketStatus);
 app.get("/getCompleteStudentDetails/:studentID",teacherController.getCompleteStudentDetails);
 app.get("/getStudentsForCC",auth.authorizeTeacher,teacherController.getStudentsForCC);
 app.put("/updateFinalTicketStatus/:studentID",auth.authorizeTeacher,teacherController.updateFinalTicketStatus);

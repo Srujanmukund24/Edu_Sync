@@ -147,6 +147,7 @@ exports.getAssignments = async(req,res)=>{
     const studentID = req.student.student_id;
     const assignments = await Assignment.find({student_id:studentID});
 
+
     return res.status(200).json(assignments);
 }
 
@@ -253,7 +254,7 @@ exports.getStudentSubjectInfo = async(req,res)=>{
         if(!studentID){
             return res.status(404).json({message:"student id required"})
         }
-        const mysubjects = await StudentSubjectInfo.find({std_id:studentID});
+        const mysubjects = await StudentSubjectInfo.find({std_id:studentID}).populate('teacher_id', 'fname lname');
         return res.status(200).json(mysubjects);
     }
     catch(err){
@@ -267,7 +268,7 @@ exports.getStudentPracticalInfo = async(req,res)=>{
         if(!studentID){
             return res.status(404).json({message:"student id required"})
         }
-        const mypracticals = await StudentPracticalInfo.find({std_id:studentID});
+        const mypracticals = await StudentPracticalInfo.find({std_id:studentID}).populate('teacher_id', 'fname lname');
         return res.status(200).json(mypracticals);
     }
     catch(err){

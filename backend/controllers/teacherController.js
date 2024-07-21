@@ -463,43 +463,48 @@ exports.getAssignmentsForTeacher = async (req, res) => {
 exports.updateTicketStatus = async (req, res) => {
     try {
         const teacherId = req.teacher.teacher_id;
-        const { studentId, subjectId, forLab, newStatus } = req.body;
+        const { studentId,forLab, newStatus } = req.body;
         const convertedStudentId = new ObjectId(studentId);
-        const convertedSubjectId = new ObjectId(subjectId);
-
+        console.log("sts"+newStatus)
         if (forLab) {
             const subject = await StudentPracticalInfo.findOne({
                 teacher_id: teacherId,
                 std_id: convertedStudentId
             });
 
-            if (!subject || !convertedSubjectId.equals(subject._id)) {
+            if (!subject ) {
                 return res.status(404).json({ message: "Practical Info not found for this particular pair of student and teacher" });
             }
+            StudentSubjectInfo.findOneAndUpdate({
+                teacher_id: teacherId,
+                std_id: convertedStudentId},
+                {sub_ticket_approval:true})
 
             subject.sub_ticket_approval = newStatus;
             await subject.save();
 
-            return res.status(200).json(subject);
+            res.status(200).json({ message: 'Approval status updated successfully to' + subject.sub_ticket_approval });
         } else {
             const subject = await StudentSubjectInfo.findOne({
                 teacher_id: teacherId,
                 std_id: convertedStudentId
             });
 
-            if (!subject || !convertedSubjectId.equals(subject._id)) {
+            if (!subject) {
                 return res.status(404).json({ message: "Subject Info not found for this particular pair of student and teacher" });
             }
-
+            StudentSubjectInfo.findOneAndUpdate({
+                teacher_id: teacherId,
+                std_id: convertedStudentId},
+                {sub_ticket_approval:true})
             subject.sub_ticket_approval = newStatus;
             await subject.save();
-
-            return res.status(200).json(subject);
+            
+            res.status(200).json({ message: 'Approval status updated successfully to' + subject.sub_ticket_approval });
+        }} catch (err) {
+            res.status(500).json({ message: 'Error updating approval status', error: err.message });
         }
-    } catch (err) {
-        console.log(err.message);
-        return res.status(400).json({ message: err.message });
-    }
+    
 };
 
 exports.updateFinalTicketStatus = async(req,res)=>{
