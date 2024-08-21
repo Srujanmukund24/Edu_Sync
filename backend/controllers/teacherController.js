@@ -28,136 +28,149 @@ const path = require('path');
 
 const excelDataToSubjects = async (excelData, type) => {
   try {
-    for (let sheetName in excelData) {
-      const data = excelData[sheetName];
-      console.log("data - ", data);
-      for (let row of data) {
-        const { rollno, ...subjectMarks } = row;
-        const student = await Student.findOne({ rollno: rollno });
-        if (!student) {
-          console.log(`Student with Roll No ${rollno} not found`);
-          continue;
-        }
+      for (let sheetName in excelData) {
+          const data = excelData[sheetName];
+          console.log("data - ",data);
+          for (let row of data) {
+              const { rollno, ...subjectMarks } = row;
+              const student = await Student.findOne({ rollno: rollno });
+              if (!student) {
+                  console.log(`Student with Roll No ${rollno} not found`);
+                  continue; 
+              }
 
-        for (let subname in subjectMarks) {
-          const existingSubject =
-            type === "practical"
-              ? await Practical.findOne({
-                  std_id: student._id,
-                  pracsubname: subname.toUpperCase(),
-                })
-              : await Subject.findOne({
-                  std_id: student._id,
-                  subname: subname.toUpperCase(),
-                });
-          if (!existingSubject) {
-            console.log(
-              `Subject '${subname}' not found for student with Roll No ${rollno}`
-            );
-            throw new Error(
-              `Subject '${subname}' not found for student with Roll No ${rollno}`
-            );
+              for (let subname in subjectMarks) {
+                  const existingSubject = (type==="practical" || type=== "attendencePractical") ? await Practical.findOne({ std_id: student._id, pracsubname : subname.toUpperCase() }) : await Subject.findOne({ std_id: student._id, subname : subname.toUpperCase() });
+                  if (!existingSubject) {
+                      console.log(`Subject '${subname}' not found for student with Roll No ${rollno}`);
+                      return new Error(`Subject '${subname}' not found for student with Roll No ${rollno}`);
+                  }
+
+                  if(type==="attendencePractical" || type === "attendenceSubject"){
+                      existingSubject.attendance = subjectMarks[subname]
+                  }else{
+                      const existingMarkIndex = existingSubject.marks.findIndex((ele) => ele.test_type === sheetName);
+                      if (existingMarkIndex !== -1) {
+                          existingSubject.marks[existingMarkIndex].marks = subjectMarks[subname];
+                      } else {
+                          existingSubject.marks.push({ test_type: sheetName, marks: subjectMarks[subname] });
+                      }
+                  }
+                  await existingSubject.save();
+                  console.log(`Marks updated for subject '${subname}' for student with Roll No ${rollno}`);
+              }
           }
-
-          const existingMarkIndex = existingSubject.marks.findIndex(
-            (ele) => ele.test_type === sheetName
-          );
-          if (existingMarkIndex !== -1) {
-            existingSubject.marks[existingMarkIndex].marks =
-              subjectMarks[subname];
-          } else {
-            existingSubject.marks.push({
-              test_type: sheetName,
-              marks: subjectMarks[subname],
-            });
-          }
-
-          await existingSubject.save();
-          console.log(
-            `Marks updated for subject '${subname}' for student with Roll No ${rollno}`
-          );
-        }
       }
-    }
   } catch (err) {
-    console.log("Error storing subject marks:", err);
-    throw err;
+      console.log("Error storing subject marks:", err);
+      throw err;
   }
 };
 
-const importExcelData2MongoDB = async (filePath, type) => {
+const importExcelData2MongoDB = async (filePath,type) => {
   try {
-    const workbook = XLSX.readFile(filePath);
-    const sheetNames = workbook.SheetNames;
-    console.log("Sheet names: ", sheetNames);
+      const workbook = XLSX.readFile(filePath);
+      const sheetNames = workbook.SheetNames;
+      console.log("Sheet names: ", sheetNames);
 
-    const sheet_array = [];
+      const sheet_array = [];
+      
+      sheetNames.forEach(sheetName => {
+          const worksheet = workbook.Sheets[sheetName];
+          const filterHeader = {};
+          for(let key in worksheet){
+              if(key.endsWith('1') && worksheet[key].hasOwnProperty('v')){
+                  const newKey = key.substring(0, key.length - 1);
+                  const val = worksheet[key].v;
+                  const str = val.toLowerCase();
+                  filterHeader[newKey] = str.trim();
+              }
+          }
 
-    sheetNames.forEach((sheetName) => {
-      const worksheet = workbook.Sheets[sheetName];
-      const filterHeader = {};
-      for (let key in worksheet) {
-        if (key.endsWith("1") && worksheet[key].hasOwnProperty("v")) {
-          const newKey = key.substring(0, key.length - 1);
-          const val = worksheet[key].v;
-          const str = val.toLowerCase();
-          filterHeader[newKey] = str.trim();
-        }
-      }
+          console.log(filterHeader);
+          sheet_array.push({
+              name: sheetName, 
+              header: {
+                  rows: 1,
+              }, 
+              columnToKey: filterHeader,
+          });  
+      }); 
 
-      console.log(filterHeader);
-      sheet_array.push({
-        name: sheetName,
-        header: {
-          rows: 1,
-        },
-        columnToKey: filterHeader,
+      const excelData = await excelToJson({
+          sourceFile: filePath,
+          sheets: sheet_array
       });
-    });
 
-    const excelData = await excelToJson({
-      sourceFile: filePath,
-      sheets: sheet_array,
-    });
-
-    console.log("Excel data : ", excelData);
-    excelDataToSubjects(excelData, type);
-    fs.unlinkSync(filePath);
+      console.log("Excel data : ", excelData);
+      excelDataToSubjects(excelData,type);
+      fs.unlinkSync(filePath); 
   } catch (err) {
-    console.log("Error importing data to MongoDB:", err);
-    throw err;
+      console.log("Error importing data to MongoDB:", err);
+      throw err;
   }
 };
 
 exports.uploadfile = async (req, res) => {
   try {
-    const filePath = await req.file.path;
-    console.log(filePath);
-    await importExcelData2MongoDB(filePath, "subject");
-    res.json({
-      msg: "File Uploaded",
-      file: req.file?.filename,
-    });
+      const filePath = await req.file.path; 
+      console.log(filePath);
+      await importExcelData2MongoDB(filePath,"subject"); 
+      res.json({
+          msg: "File Uploaded",
+          file: req.file?.filename,
+      });
   } catch (err) {
-    console.log("Error uploading file:", err);
-    res.status(500).json({ error: "Failed to upload file" });
+      console.log("Error uploading file:", err);
+      res.status(500).json({ error: "Failed to upload file" });
   }
 };
 
 exports.uploadfilePractical = async (req, res) => {
   try {
-    const filePath = await req.file.path;
-    console.log(filePath);
-    await importExcelData2MongoDB(filePath, "practical");
-    res.json({
-      msg: "File Uploaded",
-      file: req.file?.filename,
-    });
+      const filePath = await req.file.path; 
+      console.log(filePath);
+      await importExcelData2MongoDB(filePath,"practical"); 
+      res.json({
+          msg: "File Uploaded",
+          file: req.file?.filename,
+      });
   } catch (err) {
-    console.log("Error uploading file:", err);
-    res.status(500).json({ error: "Failed to upload file" });
+      console.log("Error uploading file:", err);
+      res.status(500).json({ error: "Failed to upload file" });
   }
 };
+
+exports.uploadfileAttendenceSubject = async (req, res) => {
+  try {
+      const filePath = await req.file.path; 
+      console.log(filePath);
+      await importExcelData2MongoDB(filePath,"attendenceSubject"); 
+      res.json({
+          msg: "File Uploaded",
+          file: req.file?.filename,
+      });
+  } catch (err) {
+      console.log("Error uploading file:", err);
+      res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
+exports.uploadfileAttendencePractical = async (req, res) => {
+  try {
+      const filePath = await req.file.path; 
+      console.log(filePath);
+      await importExcelData2MongoDB(filePath,"attendencePractical"); 
+      res.json({
+          msg: "File Uploaded",
+          file: req.file?.filename,
+      });
+  } catch (err) {
+      console.log("Error uploading file:", err);
+      res.status(500).json({ error: "Failed to upload file" });
+  }
+};
+
 
 //----------------------------------------------------------------------------------------------------------------------------------
 exports.registerTeacher = async (req, res) => {
