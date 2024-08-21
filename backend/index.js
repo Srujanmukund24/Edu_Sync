@@ -57,6 +57,8 @@ const upload = multer({ storage: storage });
 
 app.post("/addOrUpdateMarksOfSubjects", upload.single("uploadfile"), teacherController.uploadfile);
 app.post("/addOrUpdateMarksOfPractical", upload.single("uploadfile"), teacherController.uploadfilePractical);
+app.post("/addOrUpdateAttendenceOfSubject", upload.single("uploadfile"), teacherController.uploadfileAttendenceSubject);
+app.post("/addOrUpdateAttendenceOfPractical", upload.single("uploadfile"), teacherController.uploadfileAttendencePractical);
 
 
 app.post('/registerTeacher', teacherController.registerTeacher);
